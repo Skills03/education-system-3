@@ -1,0 +1,59 @@
+🚀 DEPLOY TO VERCEL - FOLLOW THESE STEPS
+==========================================
+
+FOLDER READY: /home/mahadev/Desktop/dev/education/deploy
+
+CONTAINS:
+✓ index.html       (Landing page)
+✓ concept.html     (Concept Teacher)
+✓ project.html     (Project Builder)
+✓ visual.html      (Visual Learning)
+✓ vercel.json      (Configuration)
+✓ .gitignore
+
+
+DEPLOYMENT STEPS:
+-----------------
+
+1. Go to: https://vercel.com/new
+
+2. Click "Browse" or drag & drop the deploy folder
+
+3. Vercel will detect:
+   - Framework Preset: Other
+   - Root Directory: ./
+   - Build Command: (leave empty)
+   - Output Directory: ./
+
+4. Click "Deploy"
+
+5. Wait 30 seconds
+
+6. Your site will be live at:
+   https://your-project-name.vercel.app/
+
+
+AFTER DEPLOYMENT:
+-----------------
+
+⚠️ Backend URLs still need configuration!
+
+Each HTML file has this line (search for "BACKEND CONFIGURATION"):
+- concept.html line ~417
+- project.html line ~345
+- visual.html line ~357
+
+Change:
+  const API_URL = '';
+
+To:
+  const API_URL = 'https://YOUR-NGROK-URL.ngrok.io';
+
+Then redeploy on Vercel (it auto-redeploys from Git or re-upload folder)
+
+
+TESTING:
+--------
+Visit: https://your-project-name.vercel.app/
+✓ See landing page with 3 cards
+✓ Click each card to test (won't work until backend URLs configured)
