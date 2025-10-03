@@ -75,11 +75,11 @@ Let's see it in action... 🚀
 
 @tool(
     "demonstrate_code",
-    "Run the code and show what happens - simulate execution",
+    "Run code and show output - shows ALL accumulated code so far (no line limit for demos)",
     {"code": str, "example_usage": str, "expected_output": str, "language": str}
 )
 async def demonstrate_code(args):
-    """Demonstrate code execution."""
+    """Demonstrate code execution. Shows full code accumulated so far."""
     code = args["code"]
     example_usage = args["example_usage"]
     expected_output = args["expected_output"]
@@ -102,7 +102,7 @@ async def demonstrate_code(args):
 {expected_output}
 ```
 
-**🎉 It works!** See how that function does exactly what we need?
+**🎉 It works!** See how that code does exactly what we need?
 """
     return {"content": [{"type": "text", "text": formatted}]}
 
