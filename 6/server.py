@@ -105,15 +105,8 @@ class UnifiedSession:
     def __init__(self, session_id):
         self.session_id = session_id
 
-        # Get API key from environment to enforce allowed_tools strictly
-        api_key = os.environ.get('ANTHROPIC_API_KEY')
-        if not api_key:
-            raise ValueError("ANTHROPIC_API_KEY environment variable not set")
-
         # Single ClaudeAgentOptions with master agent and ALL tools
-        # Use API transport (not CLI) to enforce allowed_tools restriction
         self.options = ClaudeAgentOptions(
-            api_key=api_key,  # Forces API transport - ONLY allowed_tools available
             agents={
                 "master": MASTER_TEACHER_AGENT,
             },
