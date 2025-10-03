@@ -214,6 +214,20 @@ class UnifiedSession:
         return result if result else None
 
 
+@app.route('/')
+def index():
+    """Serve the main frontend"""
+    from flask import send_file
+    return send_file('learn.html')
+
+
+@app.route('/learn.html')
+def learn():
+    """Serve the learn.html frontend"""
+    from flask import send_file
+    return send_file('learn.html')
+
+
 @app.route('/api/session/start', methods=['POST'])
 def start_session():
     """Create new session with master agent"""

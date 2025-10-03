@@ -1,0 +1,965 @@
+DEBUG:mcp.server.lowlevel.server:Initializing server 'scrimba_tools'
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
+DEBUG:mcp.server.lowlevel.server:Initializing server 'live_coding'
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
+DEBUG:mcp.server.lowlevel.server:Initializing server 'visual_tools'
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
+======================================================================
+🎓 MASTER TEACHER - COMPOSITIONAL MULTI-MODAL LEARNING
+======================================================================
+
+📱 Server: http://localhost:5000
+
+🎯 Master Agent with 13 Tools:
+  • 4 Visual Tools    - AI-generated diagrams
+  • 4 Concept Tools   - Interactive code examples
+  • 5 Project Tools   - Live coding
+
+🌟 Compositional Teaching:
+  Agent automatically uses MULTIPLE tools per lesson
+  Visual + Code + Simulation + Practice
+
+📊 1 Master Agent, 13 Tools, 1 Server, Infinite Possibilities
+💡 Ctrl+C to stop
+
+ * Serving Flask app 'server'
+ * Debug mode: on
+INFO:werkzeug:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+INFO:werkzeug:[33mPress CTRL+C to quit[0m
+INFO:werkzeug: * Restarting with stat
+DEBUG:mcp.server.lowlevel.server:Initializing server 'scrimba_tools'
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
+DEBUG:mcp.server.lowlevel.server:Initializing server 'live_coding'
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
+DEBUG:mcp.server.lowlevel.server:Initializing server 'visual_tools'
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 127-833-534
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 15:41:49] "GET /learn.html HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 15:46:42] "GET /learn.html HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 15:46:42] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+INFO:__main__:Session created: d700d4cf-e327-4242-b4fd-8cbac8c53541
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 15:46:44] "POST /api/session/start HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 15:46:44] "GET /api/stream/d700d4cf-e327-4242-b4fd-8cbac8c53541 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 15:46:46] "POST /api/teach HTTP/1.1" 200 -
+DEBUG:asyncio:Using selector: EpollSelector
+INFO:__main__:[d700d4cf] Teaching: Teach me bubble sort
+INFO:tools.visual_tools:Generating diagram for: Bubble Sort Algorithm
+DEBUG:httpcore.connection:connect_tcp.started host='queue.fal.run' port=443 local_address=None timeout=120.0 socket_options=None
+DEBUG:httpcore.connection:connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x7b67ac0635f0>
+DEBUG:httpcore.connection:start_tls.started ssl_context=<ssl.SSLContext object at 0x7b67ac0a2ed0> server_hostname='queue.fal.run' timeout=120.0
+DEBUG:httpcore.connection:start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x7b67ac0444d0>
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'POST']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'POST']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'POST']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Fri, 03 Oct 2025 10:17:22 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'460'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: POST https://queue.fal.run/fal-ai/hunyuan-image/v3/text-to-image "HTTP/1.1 200 OK"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'POST']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:22 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:23 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:23 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:24 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:24 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:25 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:26 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:26 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:27 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:27 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:28 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:28 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:29 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:30 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:30 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:31 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:32 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:32 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:33 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:33 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:34 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:34 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:35 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:35 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Fri, 03 Oct 2025 10:17:36 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'474'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=true "HTTP/1.1 200 OK"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Fri, 03 Oct 2025 10:17:36 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'476'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4/status?logs=false "HTTP/1.1 200 OK"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Fri, 03 Oct 2025 10:17:37 GMT'), (b'Content-Type', b'application/json'), (b'Content-Length', b'193'), (b'Connection', b'keep-alive'), (b'x-fal-billable-units', b'1.0'), (b'X-Fal-Served-From', b'55c83a22-ca74-42d8-bf41-45fd36f99fe5'), (b'x-fal-request-id', b'ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/ab3fbbf7-4233-4f71-abc7-2a7eb4e5a3f4 "HTTP/1.1 200 OK"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+INFO:tools.visual_tools:Generated: https://v3b.fal.media/files/b/kangaroo/jy-pf-KekZgUFW73FIwsI.png
+INFO:tools.visual_tools:Generating data structure: Array Bubble Sort Visualization
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'POST']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'POST']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'POST']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Fri, 03 Oct 2025 10:17:37 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'460'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: POST https://queue.fal.run/fal-ai/hunyuan-image/v3/text-to-image "HTTP/1.1 200 OK"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'POST']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:38 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:38 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:39 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:39 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:40 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:40 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:41 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:41 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:42 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:43 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:43 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:44 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:44 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:45 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:45 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:46 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:47 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:47 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:48 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:48 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:49 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:49 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:50 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:50 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:51 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Fri, 03 Oct 2025 10:17:52 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'474'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=true "HTTP/1.1 200 OK"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Fri, 03 Oct 2025 10:17:52 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'476'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321/status?logs=false "HTTP/1.1 200 OK"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Fri, 03 Oct 2025 10:17:52 GMT'), (b'Content-Type', b'application/json'), (b'Content-Length', b'190'), (b'Connection', b'keep-alive'), (b'x-fal-billable-units', b'1.0'), (b'X-Fal-Served-From', b'fd7e1496-2ba6-4bf4-a161-fb919e687ec6'), (b'x-fal-request-id', b'8f425162-f3a3-4e64-8491-c3b44e7ce321'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/8f425162-f3a3-4e64-8491-c3b44e7ce321 "HTTP/1.1 200 OK"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+INFO:tools.visual_tools:Generating flowchart: Bubble Sort
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'POST']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'POST']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'POST']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Fri, 03 Oct 2025 10:17:53 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'460'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: POST https://queue.fal.run/fal-ai/hunyuan-image/v3/text-to-image "HTTP/1.1 200 OK"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'POST']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:53 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:54 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:55 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:55 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:56 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:57 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:57 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:58 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:59 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:17:59 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:18:00 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:18:01 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:18:01 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:18:02 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:18:02 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:18:03 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:18:03 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:18:04 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:18:05 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:18:05 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 202, b'Accepted', [(b'Date', b'Fri, 03 Oct 2025 10:18:06 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'440'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 202 Accepted"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Fri, 03 Oct 2025 10:18:07 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'474'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=true "HTTP/1.1 200 OK"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Fri, 03 Oct 2025 10:18:07 GMT'), (b'Content-Type', b'application/json; charset=utf-8'), (b'Content-Length', b'476'), (b'Connection', b'keep-alive'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c/status?logs=false "HTTP/1.1 200 OK"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+DEBUG:httpcore.http11:send_request_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_headers.complete
+DEBUG:httpcore.http11:send_request_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:send_request_body.complete
+DEBUG:httpcore.http11:receive_response_headers.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'Date', b'Fri, 03 Oct 2025 10:18:08 GMT'), (b'Content-Type', b'application/json'), (b'Content-Length', b'190'), (b'Connection', b'keep-alive'), (b'x-fal-billable-units', b'1.0'), (b'X-Fal-Served-From', b'fd7e1496-2ba6-4bf4-a161-fb919e687ec6'), (b'x-fal-request-id', b'0319f4f9-8951-4a6c-9641-1ed1a8796c4c'), (b'Strict-Transport-Security', b'max-age=31536000; includeSubDomains'), (b'X-Robots-Tag', b'noindex')])
+INFO:httpx:HTTP Request: GET https://queue.fal.run/fal-ai/hunyuan-image/requests/0319f4f9-8951-4a6c-9641-1ed1a8796c4c "HTTP/1.1 200 OK"
+DEBUG:httpcore.http11:receive_response_body.started request=<Request [b'GET']>
+DEBUG:httpcore.http11:receive_response_body.complete
+DEBUG:httpcore.http11:response_closed.started
+DEBUG:httpcore.http11:response_closed.complete
+INFO:__main__:[d700d4cf] ✓ Complete! 20 messages
+DEBUG:claude_agent_sdk._internal.query:Read task cancelled
