@@ -105,9 +105,14 @@ class UnifiedSession:
     def __init__(self, session_id):
         self.session_id = session_id
 
+        # Get API key from environment
+        api_key = os.environ.get('ANTHROPIC_API_KEY')
+        if not api_key:
+            raise ValueError("ANTHROPIC_API_KEY environment variable not set")
+
         # Single ClaudeAgentOptions with master agent and ALL tools
-        # API key should be in ANTHROPIC_API_KEY environment variable
         self.options = ClaudeAgentOptions(
+            api_key=api_key,  # Pass API key to use Anthropic API directly (not Claude Code CLI)
             agents={
                 "master": MASTER_TEACHER_AGENT,
             },
