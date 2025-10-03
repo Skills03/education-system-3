@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎓 Scrimba-Style Teacher Agent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1200px;
+            width: 100%;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Session History Sidebar (LEFT) */
+        .session-sidebar {
+            width: 250px;
+            background: #2c3e50;
+            border-right: 1px solid #34495e;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .session-header {
+            padding: 20px;
+            background: #34495e;
+            color: white;
+        }
+
+        .session-header h3 {
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+
+        .new-session-btn {
+            width: 100%;
+            padding: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .new-session-btn:hover {
+            background: #764ba2;
+        }
+
+        .session-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .session-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #34495e;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .session-item:hover {
+            background: #3d566e;
+        }
+
+        .session-item.active {
+            background: #667eea;
+            border-color: #764ba2;
+        }
+
+        .session-title {
+            color: white;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .session-date {
+            color: #95a5a6;
+            font-size: 0.75em;
+        }
+
+        .session-delete {
+            float: right;
+            color: #e74c3c;
+            font-size: 0.8em;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        .session-delete:hover {
+            background: rgba(231, 76, 60, 0.3);
+        }
+
+        /* Lesson Template Sidebar (RIGHT) */
+        .sidebar {
+            width: 300px;
+            background: #f8f9fa;
+            border-right: 1px solid #e0e0e0;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .lesson-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .lesson-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .lesson-card h4 {
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .lesson-card p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: #fafafa;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.teacher {
+            background: white;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .message.student {
+            background: #667eea;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-left: auto;
+            max-width: 80%;
+        }
+
+        .message.action {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            color: #856404;
+        }
+
+        .message.output {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+
+        .message.cost {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 10px 15px;
+            border-radius: 8px;
+            color: #155724;
+            text-align: right;
+        }
+
+        .message .icon {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+
+        .input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        #messageInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status {
+            padding: 10px;
+            text-align: center;
+            background: #e3f2fd;
+            color: #1976d2;
+            font-weight: 500;
+        }
+
+        .status.ready { background: #d4edda; color: #155724; }
+        .status.processing { background: #fff3cd; color: #856404; }
+        .status.error { background: #f8d7da; color: #721c24; }
+
+        .loading {
+            display: inline-block;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 Interactive Coding Teacher</h1>
+            <p>Learn by doing • Code executes live • Ask anything</p>
+        </div>
+
+        <div class="main">
+            <!-- Session History Sidebar (LEFT) -->
+            <div class="session-sidebar">
+                <div class="session-header">
+                    <h3>💬 Chat History</h3>
+                    <button class="new-session-btn" onclick="createNewSession()">+ New Chat</button>
+                </div>
+                <div class="session-list" id="sessionList"></div>
+            </div>
+
+            <!-- Lesson Templates Sidebar (RIGHT) -->
+            <div class="sidebar">
+                <h3>📚 Lesson Templates</h3>
+                <div id="lessonTemplates"></div>
+            </div>
+
+            <div class="chat-area">
+                <div class="status" id="status">Click "Start Session" to begin</div>
+                <div class="messages" id="messages">
+                    <div class="message teacher">
+                        <h3>👋 Welcome to your interactive coding teacher!</h3>
+                        <p>I'll teach you programming concepts by:</p>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li>Writing actual code files</li>
+                            <li>Running the code to show results</li>
+                            <li>Explaining each concept step-by-step</li>
+                            <li>Answering your questions interactively</li>
+                        </ul>
+                        <p style="margin-top: 15px;"><strong>Choose a lesson template from the sidebar, or type your own question below!</strong></p>
+                    </div>
+                </div>
+
+                <div class="input-area">
+                    <div class="input-container">
+                        <input
+                            type="text"
+                            id="messageInput"
+                            placeholder="What would you like to learn? (e.g., 'Teach me Python decorators')"
+                            disabled
+                        >
+                        <button class="btn btn-primary" id="sendBtn" disabled>Send</button>
+                        <button class="btn btn-primary" id="sessionBtn">Start Session</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '';  // Same origin - no need for full URL
+        let sessionId = null;
+        let eventSource = null;
+        let currentSessionData = null;
+
+        const status = document.getElementById('status');
+        const messages = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const sessionBtn = document.getElementById('sessionBtn');
+        const lessonTemplates = document.getElementById('lessonTemplates');
+        const sessionList = document.getElementById('sessionList');
+
+        // ===== SESSION MANAGEMENT =====
+
+        // Get all sessions from localStorage
+        function getSessions() {
+            const sessions = localStorage.getItem('teacherSessions');
+            return sessions ? JSON.parse(sessions) : [];
+        }
+
+        // Save sessions to localStorage
+        function saveSessions(sessions) {
+            localStorage.setItem('teacherSessions', JSON.stringify(sessions));
+        }
+
+        // Create new session
+        function createNewSession() {
+            if (sessionId) {
+                // Save current session first
+                saveCurrentSession();
+                // End current session
+                if (eventSource) eventSource.close();
+            }
+
+            // Reset UI
+            sessionId = null;
+            messages.innerHTML = `
+                <div class="message teacher">
+                    <h3>👋 Welcome to your interactive coding teacher!</h3>
+                    <p>I'll teach you programming concepts by:</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Writing actual code files</li>
+                        <li>Running the code to show results</li>
+                        <li>Explaining each concept step-by-step</li>
+                        <li>Answering your questions interactively</li>
+                    </ul>
+                    <p style="margin-top: 15px;"><strong>Choose a lesson template from the sidebar, or type your own question below!</strong></p>
+                </div>
+            `;
+            updateStatus('Click "Start Session" to begin', 'ready');
+            sessionBtn.textContent = 'Start Session';
+            messageInput.disabled = true;
+            sendBtn.disabled = true;
+            messageInput.value = '';
+
+            renderSessionList();
+        }
+
+        // Save current session
+        function saveCurrentSession() {
+            if (!sessionId || !currentSessionData) return;
+
+            const sessions = getSessions();
+            const existingIndex = sessions.findIndex(s => s.id === sessionId);
+
+            // Get first user message as title
+            const firstMessage = currentSessionData.messages.find(m => m.role === 'user');
+            const title = firstMessage ? firstMessage.content.substring(0, 50) + '...' : 'New Chat';
+
+            const sessionData = {
+                id: sessionId,
+                title: title,
+                messages: currentSessionData.messages,
+                created: currentSessionData.created || new Date().toISOString(),
+                updated: new Date().toISOString()
+            };
+
+            if (existingIndex >= 0) {
+                sessions[existingIndex] = sessionData;
+            } else {
+                sessions.unshift(sessionData);
+            }
+
+            // Keep only last 50 sessions
+            if (sessions.length > 50) {
+                sessions.splice(50);
+            }
+
+            saveSessions(sessions);
+        }
+
+        // Load session
+        async function loadSession(id) {
+            const sessions = getSessions();
+            const session = sessions.find(s => s.id === id);
+
+            if (!session) {
+                console.error('Session not found:', id);
+                return;
+            }
+
+            // Save current session before switching
+            if (sessionId && sessionId !== id) {
+                saveCurrentSession();
+                if (eventSource) eventSource.close();
+            }
+
+            sessionId = session.id;
+            currentSessionData = {
+                messages: session.messages || [],
+                created: session.created
+            };
+
+            // Render messages
+            messages.innerHTML = '';
+            session.messages.forEach(msg => {
+                if (msg.role === 'user') {
+                    addMessage('student', msg.content, false);
+                } else if (msg.role === 'assistant') {
+                    addMessage('teacher', msg.content, false);
+                }
+            });
+
+            // Start SSE stream for this session
+            try {
+                console.log('🔌 Reconnecting to session:', id);
+                eventSource = new EventSource(`${API_URL}/api/stream/${id}`);
+
+                eventSource.onmessage = (event) => {
+                    const msg = JSON.parse(event.data);
+                    handleMessage(msg);
+                };
+
+                eventSource.onerror = (error) => {
+                    console.error('❌ SSE Error:', error);
+                };
+
+                eventSource.onopen = () => {
+                    console.log('✅ SSE Connected');
+                };
+
+                updateStatus('Session loaded! Continue chatting 🚀', 'ready');
+                sessionBtn.textContent = 'End Session';
+                messageInput.disabled = false;
+                sendBtn.disabled = false;
+
+                renderSessionList();
+            } catch (error) {
+                console.error('Error reconnecting:', error);
+            }
+        }
+
+        // Delete session
+        function deleteSession(id, event) {
+            event.stopPropagation();
+
+            if (!confirm('Delete this chat?')) return;
+
+            const sessions = getSessions();
+            const filtered = sessions.filter(s => s.id !== id);
+            saveSessions(filtered);
+
+            if (sessionId === id) {
+                createNewSession();
+            } else {
+                renderSessionList();
+            }
+        }
+
+        // Render session list
+        function renderSessionList() {
+            const sessions = getSessions();
+
+            if (sessions.length === 0) {
+                sessionList.innerHTML = `
+                    <div style="padding: 20px; color: #95a5a6; text-align: center; font-size: 0.9em;">
+                        No chat history yet.<br>Start a new chat!
+                    </div>
+                `;
+                return;
+            }
+
+            sessionList.innerHTML = sessions.map(session => {
+                const date = new Date(session.updated).toLocaleDateString();
+                const isActive = session.id === sessionId;
+
+                return `
+                    <div class="session-item ${isActive ? 'active' : ''}" onclick="loadSession('${session.id}')">
+                        <div class="session-title">${session.title}</div>
+                        <div class="session-date">
+                            ${date}
+                            <span class="session-delete" onclick="deleteSession('${session.id}', event)">✕</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ===== END SESSION MANAGEMENT =====
+
+        // Load lesson templates
+        async function loadLessons() {
+            try {
+                const response = await fetch(`${API_URL}/api/lessons`);
+                const lessons = await response.json();
+
+                lessonTemplates.innerHTML = lessons.map(lesson => `
+                    <div class="lesson-card" onclick="selectLesson('${lesson.prompt}')">
+                        <h4>${lesson.title}</h4>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load lessons:', error);
+            }
+        }
+
+        // Select a lesson template
+        function selectLesson(prompt) {
+            messageInput.value = prompt;
+            messageInput.focus();
+        }
+
+        // Start session
+        sessionBtn.addEventListener('click', async () => {
+            if (sessionId) {
+                // Save and stop session
+                saveCurrentSession();
+                sessionId = null;
+                currentSessionData = null;
+                if (eventSource) eventSource.close();
+                updateStatus('Session ended', 'ready');
+                sessionBtn.textContent = 'Start Session';
+                messageInput.disabled = true;
+                sendBtn.disabled = true;
+                renderSessionList();
+                return;
+            }
+
+            try {
+                updateStatus('Starting session...', 'processing');
+                const response = await fetch(`${API_URL}/api/session/start`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+
+                const data = await response.json();
+                sessionId = data.session_id;
+
+                // Initialize session data
+                currentSessionData = {
+                    messages: [],
+                    created: new Date().toISOString()
+                };
+
+                // Start SSE stream
+                console.log('🔌 Connecting to SSE stream...');
+                eventSource = new EventSource(`${API_URL}/api/stream/${sessionId}`);
+
+                eventSource.onmessage = (event) => {
+                    const msg = JSON.parse(event.data);
+                    handleMessage(msg);
+                };
+
+                eventSource.onerror = (error) => {
+                    console.error('❌ SSE Error:', error);
+                    updateStatus('Connection error - check server', 'error');
+                };
+
+                eventSource.onopen = () => {
+                    console.log('✅ SSE Connected');
+                };
+
+                updateStatus('Session ready! Ask me anything 🚀', 'ready');
+                sessionBtn.textContent = 'End Session';
+                messageInput.disabled = false;
+                sendBtn.disabled = false;
+                messageInput.focus();
+                renderSessionList();
+            } catch (error) {
+                updateStatus('Error starting session', 'error');
+                console.error(error);
+            }
+        });
+
+        // Send message
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message || !sessionId) return;
+
+            // Save user message to session data
+            if (currentSessionData) {
+                currentSessionData.messages.push({
+                    role: 'user',
+                    content: message,
+                    timestamp: new Date().toISOString()
+                });
+                saveCurrentSession();
+            }
+
+            // Display student message
+            addMessage('student', message);
+            messageInput.value = '';
+
+            try {
+                updateStatus('Teacher is thinking... 🤔', 'processing');
+                const response = await fetch(`${API_URL}/api/teach`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ session_id: sessionId, message })
+                });
+
+                if (!response.ok) throw new Error('Failed to send message');
+            } catch (error) {
+                updateStatus('Error sending message', 'error');
+                console.error(error);
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Handle incoming messages
+        function handleMessage(msg) {
+            console.log('📨 Received message:', msg);
+
+            if (msg.type === 'heartbeat') {
+                console.log('💓 Heartbeat');
+                return;
+            }
+
+            if (msg.type === 'complete') {
+                console.log('✅ Complete');
+                updateStatus('Ready for your next question! 💡', 'ready');
+                sendBtn.disabled = false;
+                saveCurrentSession();  // Auto-save when response completes
+                renderSessionList();
+                return;
+            }
+
+            console.log('➕ Adding message to UI:', msg.type);
+            addMessage(msg.type, msg.content, true);  // true = from server
+        }
+
+        // Add message to chat
+        function addMessage(type, content, fromServer = false) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${type}`;
+
+            if (type === 'teacher') {
+                msgDiv.innerHTML = `<div><span class="icon">🎓</span><strong>Teacher:</strong></div><div style="margin-top: 10px;">${formatText(content)}</div>`;
+
+                // Save teacher message to session data
+                if (fromServer && currentSessionData) {
+                    currentSessionData.messages.push({
+                        role: 'assistant',
+                        content: content,
+                        timestamp: new Date().toISOString()
+                    });
+                }
+            } else if (type === 'student') {
+                msgDiv.innerHTML = `<div><span class="icon">👤</span><strong>You:</strong> ${content}</div>`;
+            } else if (type === 'action') {
+                msgDiv.textContent = content;
+            } else if (type === 'output') {
+                msgDiv.innerHTML = `<div style="margin-bottom: 5px;">💻 Output:</div>${content}`;
+            } else if (type === 'cost') {
+                msgDiv.innerHTML = `💰 Cost: ${content}`;
+            }
+
+            messages.appendChild(msgDiv);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        // Format text (simple markdown-like)
+        function formatText(text) {
+            return text
+                .replace(/\n/g, '<br>')
+                .replace(/`([^`]+)`/g, '<code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px;">$1</code>')
+                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*([^*]+)\*/g, '<em>$1</em>');
+        }
+
+        // Update status
+        function updateStatus(text, type) {
+            status.textContent = text;
+            status.className = `status ${type}`;
+        }
+
+        // Initialize
+        loadLessons();
+        renderSessionList();
+
+        // Auto-save on page unload
+        window.addEventListener('beforeunload', () => {
+            if (sessionId && currentSessionData) {
+                saveCurrentSession();
+            }
+        });
+    </script>
+</body>
+</html>

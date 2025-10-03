@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎓 Interactive Learning Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.3em;
+            opacity: 0.95;
+        }
+
+        .systems {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .system-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .system-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+        }
+
+        .system-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .system-card h2 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .system-card p {
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .system-features {
+            list-style: none;
+            margin-bottom: 25px;
+        }
+
+        .system-features li {
+            padding: 8px 0;
+            color: #555;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .system-features li:before {
+            content: "✓ ";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .launch-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1.1em;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .launch-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .system-card.concept .system-icon { color: #667eea; }
+        .system-card.project .system-icon { color: #6366f1; }
+        .system-card.visual .system-icon { color: #f093fb; }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            opacity: 0.9;
+        }
+
+        .footer p {
+            margin-bottom: 10px;
+        }
+
+        .config-notice {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 30px;
+            color: white;
+            text-align: center;
+        }
+
+        .config-notice code {
+            background: rgba(0,0,0,0.2);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 Interactive Learning Platform</h1>
+            <p>Multi-modal programming education powered by AI</p>
+        </div>
+
+        <div class="systems">
+            <!-- Concept Teacher -->
+            <a href="concept.html" class="system-card concept">
+                <div class="system-icon">📚</div>
+                <h2>Concept Teacher</h2>
+                <p>Learn programming concepts through interactive examples and simulations</p>
+                <ul class="system-features">
+                    <li>Code examples with explanations</li>
+                    <li>Live code simulations</li>
+                    <li>Progressive learning paths</li>
+                    <li>Interactive challenges</li>
+                </ul>
+                <button class="launch-btn">Launch Concept Teacher →</button>
+            </a>
+
+            <!-- Project Builder -->
+            <a href="project.html" class="system-card project">
+                <div class="system-icon">🚀</div>
+                <h2>Project Builder</h2>
+                <p>Build real projects with live coding, Scrimba-style teaching</p>
+                <ul class="system-features">
+                    <li>Live coding demonstrations</li>
+                    <li>Build complete projects</li>
+                    <li>Step-by-step guidance</li>
+                    <li>Code reviews & feedback</li>
+                </ul>
+                <button class="launch-btn">Launch Project Builder →</button>
+            </a>
+
+            <!-- Visual Learning -->
+            <a href="visual.html" class="system-card visual">
+                <div class="system-icon">🎨</div>
+                <h2>Visual Learning</h2>
+                <p>Understand concepts through AI-generated diagrams and visualizations</p>
+                <ul class="system-features">
+                    <li>AI-generated diagrams</li>
+                    <li>Data structure visualizations</li>
+                    <li>Algorithm flowcharts</li>
+                    <li>Architecture diagrams</li>
+                </ul>
+                <button class="launch-btn">Launch Visual Learning →</button>
+            </a>
+        </div>
+
+        <div class="config-notice">
+            <strong>⚙️ Backend Configuration</strong><br>
+            Backend servers should be running via ngrok.<br>
+            Update <code>BACKEND_URL_*</code> variables in each HTML file before deployment.
+        </div>
+
+        <div class="footer">
+            <p>Three powerful learning modalities in one platform</p>
+            <p>Text • Code • Visuals</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend Test - Scrimba Teacher</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+        }
+        .test { margin: 20px 0; padding: 15px; background: #2a2a2a; border-radius: 5px; }
+        .pass { border-left: 4px solid #00ff00; }
+        .fail { border-left: 4px solid #ff0000; color: #ff6b6b; }
+        .pending { border-left: 4px solid #ffd700; color: #ffd700; }
+        h1 { color: #00ff00; }
+        h2 { color: #00aaff; }
+        button {
+            background: #00ff00;
+            color: #1e1e1e;
+            border: none;
+            padding: 10px 20px;
+            font-family: monospace;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        button:hover { background: #00dd00; }
+        #results { margin-top: 20px; }
+        .log { color: #888; font-size: 12px; margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Frontend Tests - Scrimba Teacher</h1>
+    <button onclick="runTests()">▶️ Run All Tests</button>
+    <div id="results"></div>
+
+    <script>
+        const API_URL = 'http://localhost:5000';
+        let testResults = [];
+        let sessionId = null;
+
+        function log(test, message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.textContent = `  ${message}`;
+            document.getElementById(`test-${test}`).appendChild(div);
+        }
+
+        function addTest(id, name, status = 'pending') {
+            const div = document.createElement('div');
+            div.className = `test ${status}`;
+            div.id = `test-${id}`;
+            div.innerHTML = `<h2>Test ${id}: ${name}</h2>`;
+            document.getElementById('results').appendChild(div);
+        }
+
+        function updateTest(id, status) {
+            const div = document.getElementById(`test-${id}`);
+            div.className = `test ${status}`;
+        }
+
+        async function test1_LoadLessons() {
+            addTest(1, 'Load Lessons', 'pending');
+
+            try {
+                log(1, 'Fetching /api/lessons...');
+                const response = await fetch(`${API_URL}/api/lessons`);
+                const lessons = await response.json();
+
+                log(1, `✓ Got ${lessons.length} lessons`);
+                lessons.forEach(l => log(1, `  - ${l.title}`));
+
+                updateTest(1, 'pass');
+                return true;
+            } catch (error) {
+                log(1, `✗ Error: ${error.message}`, 'fail');
+                updateTest(1, 'fail');
+                return false;
+            }
+        }
+
+        async function test2_CreateSession() {
+            addTest(2, 'Create Session', 'pending');
+
+            try {
+                log(2, 'Creating session...');
+                const response = await fetch(`${API_URL}/api/session/start`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+
+                const data = await response.json();
+                sessionId = data.session_id;
+
+                log(2, `✓ Session created: ${sessionId}`);
+                updateTest(2, 'pass');
+                return true;
+            } catch (error) {
+                log(2, `✗ Error: ${error.message}`, 'fail');
+                updateTest(2, 'fail');
+                return false;
+            }
+        }
+
+        async function test3_ConnectSSE() {
+            addTest(3, 'Connect to SSE Stream', 'pending');
+
+            return new Promise((resolve) => {
+                try {
+                    log(3, `Connecting to /api/stream/${sessionId}...`);
+
+                    const eventSource = new EventSource(`${API_URL}/api/stream/${sessionId}`);
+
+                    eventSource.onopen = () => {
+                        log(3, '✓ SSE connection opened');
+                        updateTest(3, 'pass');
+                        eventSource.close();
+                        resolve(true);
+                    };
+
+                    eventSource.onerror = (error) => {
+                        log(3, `✗ SSE connection error`, 'fail');
+                        updateTest(3, 'fail');
+                        eventSource.close();
+                        resolve(false);
+                    };
+
+                    // Timeout after 5 seconds
+                    setTimeout(() => {
+                        log(3, '✗ Connection timeout', 'fail');
+                        updateTest(3, 'fail');
+                        eventSource.close();
+                        resolve(false);
+                    }, 5000);
+
+                } catch (error) {
+                    log(3, `✗ Error: ${error.message}`, 'fail');
+                    updateTest(3, 'fail');
+                    resolve(false);
+                }
+            });
+        }
+
+        async function test4_SendMessage() {
+            addTest(4, 'Send Teaching Request', 'pending');
+
+            try {
+                log(4, 'Sending message to teacher...');
+
+                const response = await fetch(`${API_URL}/api/teach`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        message: 'Explain Python list comprehensions in 2 sentences'
+                    })
+                });
+
+                if (response.ok) {
+                    log(4, '✓ Message sent successfully');
+                    log(4, 'Waiting 3 seconds for processing...');
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    updateTest(4, 'pass');
+                    return true;
+                } else {
+                    log(4, `✗ Response status: ${response.status}`, 'fail');
+                    updateTest(4, 'fail');
+                    return false;
+                }
+            } catch (error) {
+                log(4, `✗ Error: ${error.message}`, 'fail');
+                updateTest(4, 'fail');
+                return false;
+            }
+        }
+
+        async function test5_CheckQueue() {
+            addTest(5, 'Check Message Queue', 'pending');
+
+            try {
+                log(5, `Checking debug endpoint for session ${sessionId}...`);
+
+                const response = await fetch(`${API_URL}/api/debug/${sessionId}`);
+                const data = await response.json();
+
+                log(5, `Queue length: ${data.queue_length}`);
+                log(5, `Session exists: ${data.session_exists}`);
+
+                if (data.queue_length > 0) {
+                    log(5, `✓ Found ${data.queue_length} messages in queue`);
+                    data.messages.slice(0, 3).forEach((msg, i) => {
+                        log(5, `  ${i+1}. ${msg.type}: ${msg.content?.substring(0, 40)}...`);
+                    });
+                    updateTest(5, 'pass');
+                    return true;
+                } else {
+                    log(5, '⚠ Queue is empty - agent may not have responded', 'fail');
+                    updateTest(5, 'fail');
+                    return false;
+                }
+            } catch (error) {
+                log(5, `✗ Error: ${error.message}`, 'fail');
+                updateTest(5, 'fail');
+                return false;
+            }
+        }
+
+        async function test6_ReceiveStream() {
+            addTest(6, 'Receive SSE Messages', 'pending');
+
+            return new Promise((resolve) => {
+                try {
+                    log(6, `Opening SSE stream for session ${sessionId}...`);
+
+                    const eventSource = new EventSource(`${API_URL}/api/stream/${sessionId}`);
+                    const messages = [];
+                    let messageCount = 0;
+
+                    eventSource.onmessage = (event) => {
+                        const msg = JSON.parse(event.data);
+
+                        if (msg.type === 'heartbeat') {
+                            log(6, '💓 Heartbeat received');
+                            return;
+                        }
+
+                        messageCount++;
+                        log(6, `📨 Message ${messageCount}: ${msg.type}`);
+
+                        if (msg.content) {
+                            log(6, `   ${msg.content.substring(0, 50)}...`);
+                        }
+
+                        messages.push(msg);
+
+                        if (msg.type === 'complete') {
+                            log(6, `✓ Received ${messageCount} messages total`);
+                            updateTest(6, 'pass');
+                            eventSource.close();
+                            resolve(true);
+                        }
+                    };
+
+                    eventSource.onerror = (error) => {
+                        if (messageCount > 0) {
+                            log(6, `✓ Received ${messageCount} messages before error`);
+                            updateTest(6, 'pass');
+                            resolve(true);
+                        } else {
+                            log(6, '✗ Stream error with no messages', 'fail');
+                            updateTest(6, 'fail');
+                            resolve(false);
+                        }
+                        eventSource.close();
+                    };
+
+                    // Timeout after 10 seconds
+                    setTimeout(() => {
+                        if (messageCount > 0) {
+                            log(6, `⚠ Timeout but received ${messageCount} messages`);
+                            updateTest(6, 'pass');
+                        } else {
+                            log(6, '✗ Timeout with no messages', 'fail');
+                            updateTest(6, 'fail');
+                        }
+                        eventSource.close();
+                        resolve(messageCount > 0);
+                    }, 10000);
+
+                } catch (error) {
+                    log(6, `✗ Error: ${error.message}`, 'fail');
+                    updateTest(6, 'fail');
+                    resolve(false);
+                }
+            });
+        }
+
+        async function runTests() {
+            document.getElementById('results').innerHTML = '<h2>Running tests...</h2>';
+
+            const test1 = await test1_LoadLessons();
+            if (!test1) return;
+
+            const test2 = await test2_CreateSession();
+            if (!test2) return;
+
+            const test3 = await test3_ConnectSSE();
+            if (!test3) return;
+
+            const test4 = await test4_SendMessage();
+            if (!test4) return;
+
+            const test5 = await test5_CheckQueue();
+
+            const test6 = await test6_ReceiveStream();
+
+            // Summary
+            const summary = document.createElement('div');
+            summary.className = 'test pass';
+            summary.innerHTML = `
+                <h2>✅ Test Summary</h2>
+                <div class="log">All core functionality tests completed!</div>
+                <div class="log">Session ID: ${sessionId}</div>
+                <div class="log">If all tests passed, the frontend is working correctly.</div>
+            `;
+            document.getElementById('results').appendChild(summary);
+        }
+    </script>
+</body>
+</html>
