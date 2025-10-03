@@ -233,5 +233,5 @@ Remember: You're building CONFIDENCE! Code within 60 seconds! ONE concept! Conso
         "mcp__visual__generate_algorithm_flowchart",
         "mcp__visual__generate_architecture_diagram",
     ],
-    model="sonnet",
+    model="claude-sonnet-4-5-20250929",
 )
