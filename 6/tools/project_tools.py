@@ -33,15 +33,25 @@ We'll create this project step-by-step, and I'll code it WITH you - just like Sc
 
 @tool(
     "code_live_increment",
-    "Add code incrementally with live explanation - like typing in real-time",
+    "Add code incrementally - MAXIMUM 3 LINES per call (Scrimba-style line-by-line teaching)",
     {"feature": str, "code_to_add": str, "explanation": str, "language": str}
 )
 async def code_live_increment(args):
-    """Show code being added with explanation."""
+    """Show code being added with explanation. ENFORCES MAX 3 LINES."""
     feature = args["feature"]
     code_to_add = args["code_to_add"]
     explanation = args["explanation"]
     language = args.get("language", "python")
+
+    # ENFORCE MAX 3 LINES - Scrimba style!
+    lines = code_to_add.strip().split('\n')
+    if len(lines) > 3:
+        return {
+            "content": [{
+                "type": "text",
+                "text": f"❌ ERROR: code_live_increment allows MAX 3 LINES at a time (Scrimba-style teaching).\nYou tried to add {len(lines)} lines.\n\nSplit your code into smaller increments and call this tool multiple times!\n\nExample:\nCall 1: let count = 0\nCall 2: console.log(count)\nCall 3: count = count + 1"
+            }]
+        }
 
     formatted = f"""### ✍️ Adding: {feature}
 
