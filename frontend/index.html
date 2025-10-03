@@ -284,7 +284,6 @@
         sessionBtn.addEventListener('click', async () => {
             if (sessionId) {
                 sessionId = null;
-                if (eventSource) eventSource.close();
                 updateStatus('Session ended', 'ready');
                 sessionBtn.textContent = 'Start Learning';
                 messageInput.disabled = true;
@@ -296,24 +295,45 @@
                 updateStatus('Starting master teacher...', 'processing');
                 const response = await fetch(`${API_URL}/api/session/start`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true'
+                    },
                     body: JSON.stringify({})
                 });
 
                 const data = await response.json();
                 sessionId = data.session_id;
 
-                eventSource = new EventSource(`${API_URL}/api/stream/${sessionId}`);
+                // EventSource doesn't support custom headers, use fetch with streaming
+                const streamUrl = `${API_URL}/api/stream/${sessionId}`;
+                fetch(streamUrl, {
+                    headers: { 'ngrok-skip-browser-warning': 'true' }
+                }).then(async (response) => {
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
 
-                eventSource.onmessage = (event) => {
-                    const msg = JSON.parse(event.data);
-                    handleMessage(msg);
-                };
+                    while (true) {
+                        const {done, value} = await reader.read();
+                        if (done) break;
 
-                eventSource.onerror = (error) => {
-                    console.error('SSE Error:', error);
+                        const chunk = decoder.decode(value);
+                        const lines = chunk.split('\n');
+
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                try {
+                                    const msg = JSON.parse(line.substring(6));
+                                    handleMessage(msg);
+                                } catch (e) {}
+                            }
+                        }
+                    }
+                }).catch((error) => {
+                    console.error('Stream Error:', error);
                     updateStatus('Connection error', 'error');
-                };
+                });
+
 
                 updateStatus('Ready! What would you like to learn? 🎓', 'ready');
                 sessionBtn.textContent = 'End Session';
@@ -337,7 +357,10 @@
                 updateStatus('Master teacher is preparing your lesson... 🎨', 'processing');
                 const response = await fetch(`${API_URL}/api/teach`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': 'true'
+                    },
                     body: JSON.stringify({ session_id: sessionId, message })
                 });
 
