@@ -312,20 +312,30 @@
                 }).then(async (response) => {
                     const reader = response.body.getReader();
                     const decoder = new TextDecoder();
+                    let buffer = '';
 
                     while (true) {
                         const {done, value} = await reader.read();
                         if (done) break;
 
-                        const chunk = decoder.decode(value);
-                        const lines = chunk.split('\n');
+                        // Accumulate chunks in buffer
+                        buffer += decoder.decode(value, {stream: true});
+
+                        // Process complete lines
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop() || ''; // Keep incomplete line in buffer
 
                         for (const line of lines) {
                             if (line.startsWith('data: ')) {
                                 try {
-                                    const msg = JSON.parse(line.substring(6));
-                                    handleMessage(msg);
-                                } catch (e) {}
+                                    const jsonStr = line.substring(6).trim();
+                                    if (jsonStr) {
+                                        const msg = JSON.parse(jsonStr);
+                                        handleMessage(msg);
+                                    }
+                                } catch (e) {
+                                    console.error('Parse error:', e, line);
+                                }
                             }
                         }
                     }
