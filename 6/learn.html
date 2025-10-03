@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎓 Master Teacher - Multi-Modal Learning</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1200px;
+            width: 100%;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.95;
+            font-size: 1.1em;
+        }
+
+        .status {
+            padding: 12px;
+            text-align: center;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .status.ready { background: #d1fae5; color: #065f46; }
+        .status.processing { background: #fef3c7; color: #92400e; }
+        .status.error { background: #fee2e2; color: #991b1b; }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.teacher {
+            background: white;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .message.teacher img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 15px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .message.student {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-left: auto;
+            max-width: 80%;
+        }
+
+        .message.action {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            color: #92400e;
+            font-size: 0.95em;
+        }
+
+        .message.output {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .message.output img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 15px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .message.cost {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            padding: 10px 18px;
+            border-radius: 8px;
+            color: #065f46;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        .input-area {
+            padding: 25px;
+            background: white;
+            border-top: 2px solid #e5e7eb;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        #messageInput:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        pre {
+            background: #1e1e1e;
+            color: #e5e7eb;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+
+        code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 Master Teacher</h1>
+            <p>Compositional Multi-Modal Learning • Ask anything, get complete lessons</p>
+        </div>
+
+        <div class="status" id="status">Click "Start Learning" to begin</div>
+
+        <div class="messages" id="messages">
+            <div class="message teacher">
+                <h3>👋 Welcome to Master Teacher!</h3>
+                <p style="margin-top: 12px; line-height: 1.6;">
+                    I'm your master programming teacher with 13 specialized tools. I teach using MULTIPLE methods simultaneously - just like a real teacher!
+                </p>
+                <ul style="margin: 16px 0 0 24px; line-height: 1.8;">
+                    <li>📊 <strong>Visual Learning</strong> - AI-generated diagrams and flowcharts</li>
+                    <li>💻 <strong>Interactive Code</strong> - Live examples with execution</li>
+                    <li>🚀 <strong>Project Building</strong> - Build real applications together</li>
+                    <li>🎯 <strong>Practice</strong> - Challenges to reinforce learning</li>
+                </ul>
+                <div style="margin-top: 20px; padding: 20px; background: #f3f4f6; border-radius: 8px;">
+                    <strong>💡 Try these:</strong>
+                    <ul style="margin-top: 10px; line-height: 1.8;">
+                        <li>"Teach me linked lists" → Diagram + Code + Demo + Challenge</li>
+                        <li>"Build a calculator with me" → Live coding session</li>
+                        <li>"How does bubble sort work?" → Flowchart + Code + Simulation</li>
+                        <li>"Explain recursion" → Visual + Examples + Practice</li>
+                    </ul>
+                </div>
+                <p style="margin-top: 16px;">
+                    <strong>No tabs, no modes</strong> - Just ask naturally and I'll use the right tools to teach you completely!
+                </p>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-container">
+                <input
+                    type="text"
+                    id="messageInput"
+                    placeholder="What do you want to learn? (e.g., 'Teach me linked lists')"
+                    disabled
+                >
+                <button class="btn btn-primary" id="sendBtn" disabled>Send</button>
+                <button class="btn btn-primary" id="sessionBtn">Start Learning</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000';
+        let sessionId = null;
+        let eventSource = null;
+
+        const status = document.getElementById('status');
+        const messages = document.getElementById('messages');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const sessionBtn = document.getElementById('sessionBtn');
+
+        sessionBtn.addEventListener('click', async () => {
+            if (sessionId) {
+                sessionId = null;
+                if (eventSource) eventSource.close();
+                updateStatus('Session ended', 'ready');
+                sessionBtn.textContent = 'Start Learning';
+                messageInput.disabled = true;
+                sendBtn.disabled = true;
+                return;
+            }
+
+            try {
+                updateStatus('Starting master teacher...', 'processing');
+                const response = await fetch(`${API_URL}/api/session/start`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+
+                const data = await response.json();
+                sessionId = data.session_id;
+
+                eventSource = new EventSource(`${API_URL}/api/stream/${sessionId}`);
+
+                eventSource.onmessage = (event) => {
+                    const msg = JSON.parse(event.data);
+                    handleMessage(msg);
+                };
+
+                eventSource.onerror = (error) => {
+                    console.error('SSE Error:', error);
+                    updateStatus('Connection error', 'error');
+                };
+
+                updateStatus('Ready! What would you like to learn? 🎓', 'ready');
+                sessionBtn.textContent = 'End Session';
+                messageInput.disabled = false;
+                sendBtn.disabled = false;
+                messageInput.focus();
+            } catch (error) {
+                updateStatus('Error starting session', 'error');
+                console.error(error);
+            }
+        });
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message || !sessionId) return;
+
+            addMessage('student', message);
+            messageInput.value = '';
+
+            try {
+                updateStatus('Master teacher is preparing your lesson... 🎨', 'processing');
+                const response = await fetch(`${API_URL}/api/teach`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ session_id: sessionId, message })
+                });
+
+                if (!response.ok) throw new Error('Failed to send');
+            } catch (error) {
+                updateStatus('Error sending message', 'error');
+                console.error(error);
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        function handleMessage(msg) {
+            if (msg.type === 'heartbeat') return;
+
+            if (msg.type === 'complete') {
+                updateStatus('Lesson complete! Ask another question 💡', 'ready');
+                sendBtn.disabled = false;
+                return;
+            }
+
+            addMessage(msg.type, msg.content);
+        }
+
+        function addMessage(type, content) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${type}`;
+
+            if (type === 'teacher') {
+                const rendered = typeof marked !== 'undefined' ? marked.parse(content) : content;
+                msgDiv.innerHTML = `<div style="margin-bottom: 10px;"><strong>🎓 Master Teacher:</strong></div>${rendered}`;
+            } else if (type === 'student') {
+                msgDiv.innerHTML = `<strong>👤 You:</strong> ${content}`;
+            } else if (type === 'action') {
+                msgDiv.textContent = content;
+            } else if (type === 'output') {
+                const text = Array.isArray(content) ? (content[0]?.text || JSON.stringify(content)) : content;
+                const rendered = typeof marked !== 'undefined' ? marked.parse(text) : text;
+                msgDiv.innerHTML = rendered;
+            } else if (type === 'cost') {
+                msgDiv.innerHTML = `💰 Lesson Cost: ${content}`;
+            }
+
+            messages.appendChild(msgDiv);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function updateStatus(text, type) {
+            status.textContent = text;
+            status.className = `status ${type}`;
+        }
+    </script>
+</body>
+</html>

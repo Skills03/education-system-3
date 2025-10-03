@@ -44,10 +44,8 @@ from tools.visual_tools import (
     generate_architecture_diagram,
 )
 
-# Import agents
-from agents.concept_agent import CONCEPT_AGENT
-from agents.project_agent import PROJECT_AGENT
-from agents.visual_agent import VISUAL_AGENT
+# Import master agent
+from agents.master_agent import MASTER_TEACHER_AGENT
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -101,18 +99,15 @@ message_queues = {}
 
 
 class UnifiedSession:
-    """Unified session supporting all 3 teaching modes"""
+    """Master session with compositional multi-modal teaching"""
 
-    def __init__(self, session_id, mode="concept"):
+    def __init__(self, session_id):
         self.session_id = session_id
-        self.mode = mode
 
-        # Single ClaudeAgentOptions with ALL agents and tools
+        # Single ClaudeAgentOptions with master agent and ALL tools
         self.options = ClaudeAgentOptions(
             agents={
-                "concept": CONCEPT_AGENT,
-                "project": PROJECT_AGENT,
-                "visual": VISUAL_AGENT,
+                "master": MASTER_TEACHER_AGENT,
             },
             mcp_servers={
                 "scrimba": scrimba_tools,
@@ -141,13 +136,13 @@ class UnifiedSession:
         self.messages = []
 
     async def teach(self, instruction):
-        """Teach using the specified agent mode"""
-        logger.info(f"[{self.session_id[:8]}] Mode: {self.mode}, Teaching: {instruction}")
+        """Teach using master agent with compositional tool use"""
+        logger.info(f"[{self.session_id[:8]}] Teaching: {instruction}")
 
         try:
             async with ClaudeSDKClient(options=self.options) as client:
-                # Use the agent based on mode
-                await client.query(f"Use the {self.mode} agent: {instruction}")
+                # Use master agent - it decides which tools to use
+                await client.query(f"Use the master agent: {instruction}")
 
                 message_count = 0
                 async for msg in client.receive_response():
@@ -221,17 +216,14 @@ class UnifiedSession:
 
 @app.route('/api/session/start', methods=['POST'])
 def start_session():
-    """Create new session with specified mode"""
-    data = request.json or {}
-    mode = data.get('mode', 'concept')  # Default to concept mode
-
+    """Create new session with master agent"""
     session_id = str(uuid.uuid4())
-    session = UnifiedSession(session_id, mode)
+    session = UnifiedSession(session_id)
     sessions[session_id] = session
     message_queues[session_id] = []
 
-    logger.info(f"Session created: {session_id}, mode: {mode}")
-    return jsonify({"session_id": session_id, "mode": mode, "status": "ready"})
+    logger.info(f"Session created: {session_id}")
+    return jsonify({"session_id": session_id, "status": "ready"})
 
 
 @app.route('/api/teach', methods=['POST'])
@@ -291,13 +283,16 @@ def stream(session_id):
 
 if __name__ == '__main__':
     print("=" * 70)
-    print("🎓 UNIFIED LEARNING SERVER")
+    print("🎓 MASTER TEACHER - COMPOSITIONAL MULTI-MODAL LEARNING")
     print("=" * 70)
     print("\n📱 Server: http://localhost:5000")
-    print("\n🎯 Three Teaching Modes:")
-    print("  1. Concept Teaching  - Interactive code examples & simulations")
-    print("  2. Project Building  - Live coding Scrimba-style")
-    print("  3. Visual Learning   - AI-generated diagrams")
-    print("\n📊 Total: 13 tools, 3 agents, 1 server")
+    print("\n🎯 Master Agent with 13 Tools:")
+    print("  • 4 Visual Tools    - AI-generated diagrams")
+    print("  • 4 Concept Tools   - Interactive code examples")
+    print("  • 5 Project Tools   - Live coding")
+    print("\n🌟 Compositional Teaching:")
+    print("  Agent automatically uses MULTIPLE tools per lesson")
+    print("  Visual + Code + Simulation + Practice")
+    print("\n📊 1 Master Agent, 13 Tools, 1 Server, Infinite Possibilities")
     print("💡 Ctrl+C to stop\n")
     app.run(debug=True, port=5000, threaded=True)
