@@ -963,3 +963,34 @@ DEBUG:httpcore.http11:response_closed.started
 DEBUG:httpcore.http11:response_closed.complete
 INFO:__main__:[d700d4cf] ✓ Complete! 20 messages
 DEBUG:claude_agent_sdk._internal.query:Read task cancelled
+INFO:werkzeug: * Detected change in '/home/mahadev/Desktop/dev/education/6/server.py', reloading
+======================================================================
+🎓 MASTER TEACHER - COMPOSITIONAL MULTI-MODAL LEARNING
+======================================================================
+
+📱 Server: http://localhost:5000
+
+🎯 Master Agent with 13 Tools:
+  • 4 Visual Tools    - AI-generated diagrams
+  • 4 Concept Tools   - Interactive code examples
+  • 5 Project Tools   - Live coding
+
+🌟 Compositional Teaching:
+  Agent automatically uses MULTIPLE tools per lesson
+  Visual + Code + Simulation + Practice
+
+📊 1 Master Agent, 13 Tools, 1 Server, Infinite Possibilities
+💡 Ctrl+C to stop
+
+INFO:werkzeug: * Restarting with stat
+DEBUG:mcp.server.lowlevel.server:Initializing server 'scrimba_tools'
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
+DEBUG:mcp.server.lowlevel.server:Initializing server 'live_coding'
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
+DEBUG:mcp.server.lowlevel.server:Initializing server 'visual_tools'
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 127-833-534

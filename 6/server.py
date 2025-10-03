@@ -92,7 +92,7 @@ visual_tools = create_sdk_mcp_server(
 
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 sessions = {}
 message_queues = {}
