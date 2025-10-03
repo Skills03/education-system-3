@@ -51,7 +51,8 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 # Setup FAL AI for image generation
-os.environ['FAL_KEY'] = '7cc98720-6ee8-45da-bf97-97a66d2ecdb3:f54b62a31f19f2f55f0bba871b273ee4'
+if 'FAL_KEY' not in os.environ:
+    os.environ['FAL_KEY'] = '7cc98720-6ee8-45da-bf97-97a66d2ecdb3:f54b62a31f19f2f55f0bba871b273ee4'
 
 
 # ===== CREATE MCP SERVERS =====
@@ -309,4 +310,6 @@ if __name__ == '__main__':
     print("  Visual + Code + Simulation + Practice")
     print("\n📊 1 Master Agent, 13 Tools, 1 Server, Infinite Possibilities")
     print("💡 Ctrl+C to stop\n")
-    app.run(debug=True, port=5000, threaded=True)
+
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False, threaded=True)
