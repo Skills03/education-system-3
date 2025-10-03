@@ -994,3 +994,6 @@ DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
 DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
 WARNING:werkzeug: * Debugger is active!
 INFO:werkzeug: * Debugger PIN: 127-833-534
+INFO:__main__:Session created: a9430e07-cf4f-4294-a9d9-7bfb09070a86
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:03:13] "POST /api/session/start HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:04:25] "GET /api/stream/a9430e07-cf4f-4294-a9d9-7bfb09070a86 HTTP/1.1" 200 -
