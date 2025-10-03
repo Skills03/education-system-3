@@ -997,3 +997,57 @@ INFO:werkzeug: * Debugger PIN: 127-833-534
 INFO:__main__:Session created: a9430e07-cf4f-4294-a9d9-7bfb09070a86
 INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:03:13] "POST /api/session/start HTTP/1.1" 200 -
 INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:04:25] "GET /api/stream/a9430e07-cf4f-4294-a9d9-7bfb09070a86 HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:15:23] "OPTIONS /api/session/start HTTP/1.1" 200 -
+INFO:__main__:Session created: 5e022b95-9c8e-4247-ac93-9eadf66aabeb
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:15:23] "POST /api/session/start HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:15:36] "OPTIONS /api/teach HTTP/1.1" 200 -
+DEBUG:asyncio:Using selector: EpollSelector
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:15:36] "POST /api/teach HTTP/1.1" 200 -
+INFO:__main__:[5e022b95] Teaching: hi
+INFO:__main__:[5e022b95] ✓ Complete! 3 messages
+DEBUG:claude_agent_sdk._internal.query:Read task cancelled
+INFO:__main__:Session created: c05d05c0-163b-4edd-8d1f-6e7008e937f6
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:16:11] "POST /api/session/start HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:18:41] "OPTIONS /api/session/start HTTP/1.1" 200 -
+INFO:__main__:Session created: da1ca6c7-a545-4613-bcb2-fb89bebf67ab
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:18:41] "POST /api/session/start HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:20:10] "OPTIONS /api/session/start HTTP/1.1" 200 -
+INFO:__main__:Session created: b0ed4e8b-289a-4e65-bbd2-f9ce76a6f6aa
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:20:10] "POST /api/session/start HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:20:10] "OPTIONS /api/stream/b0ed4e8b-289a-4e65-bbd2-f9ce76a6f6aa HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:20:10] "GET /api/stream/b0ed4e8b-289a-4e65-bbd2-f9ce76a6f6aa HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:20:15] "OPTIONS /api/teach HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [03/Oct/2025 16:20:15] "POST /api/teach HTTP/1.1" 200 -
+DEBUG:asyncio:Using selector: EpollSelector
+INFO:__main__:[b0ed4e8b] Teaching: hi
+INFO:__main__:[b0ed4e8b] ✓ Complete! 3 messages
+DEBUG:claude_agent_sdk._internal.query:Read task cancelled
+INFO:werkzeug: * Detected change in '/home/mahadev/Desktop/dev/education/6/server.py', reloading
+======================================================================
+🎓 MASTER TEACHER - COMPOSITIONAL MULTI-MODAL LEARNING
+======================================================================
+
+📱 Server: http://localhost:5000
+
+🎯 Master Agent with 13 Tools:
+  • 4 Visual Tools    - AI-generated diagrams
+  • 4 Concept Tools   - Interactive code examples
+  • 5 Project Tools   - Live coding
+
+🌟 Compositional Teaching:
+  Agent automatically uses MULTIPLE tools per lesson
+  Visual + Code + Simulation + Practice
+
+📊 1 Master Agent, 13 Tools, 1 Server, Infinite Possibilities
+💡 Ctrl+C to stop
+
+INFO:werkzeug: * Restarting with stat
+DEBUG:mcp.server.lowlevel.server:Initializing server 'scrimba_tools'
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
+DEBUG:mcp.server.lowlevel.server:Initializing server 'live_coding'
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
+DEBUG:mcp.server.lowlevel.server:Initializing server 'visual_tools'
+DEBUG:mcp.server.lowlevel.server:Registering handler for ListToolsRequest
+DEBUG:mcp.server.lowlevel.server:Registering handler for CallToolRequest
