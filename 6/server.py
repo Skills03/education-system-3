@@ -287,8 +287,7 @@ def stream(session_id):
                 for msg in queue[sent_count:]:
                     yield f"data: {json.dumps(msg)}\n\n"
                     sent_count += 1
-                    if msg.get('type') in ['complete', 'error']:
-                        return
+                    # Don't close stream on complete - allow multiple teach requests
                 heartbeat_count = 0
             else:
                 yield f"data: {json.dumps({'type': 'heartbeat'})}\n\n"
