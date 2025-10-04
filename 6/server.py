@@ -106,6 +106,9 @@ class UnifiedSession:
         self.session_id = session_id
 
         # Single ClaudeAgentOptions with master agent and ALL tools
+        # Set Claude CLI path in environment
+        os.environ['PATH'] = f"/root/.nvm/versions/node/v22.20.0/bin:{os.environ.get('PATH', '')}"
+
         self.options = ClaudeAgentOptions(
             agents={
                 "master": MASTER_TEACHER_AGENT,
