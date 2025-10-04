@@ -112,6 +112,9 @@ class UnifiedSession:
             raise ValueError("ANTHROPIC_API_KEY environment variable not set")
 
         # Single ClaudeAgentOptions with master agent and ALL tools
+        # Set Claude CLI path in environment
+        os.environ['PATH'] = f"/root/.nvm/versions/node/v22.20.0/bin:{os.environ.get('PATH', '')}"
+
         self.options = ClaudeAgentOptions(
             api_key=api_key,  # Pass API key to use Anthropic API directly (not Claude Code CLI)
             agents={
@@ -291,8 +294,7 @@ def stream(session_id):
                 for msg in queue[sent_count:]:
                     yield f"data: {json.dumps(msg)}\n\n"
                     sent_count += 1
-                    if msg.get('type') in ['complete', 'error']:
-                        return
+                    # Don't close stream on complete - allow multiple teach requests
                 heartbeat_count = 0
             else:
                 yield f"data: {json.dumps({'type': 'heartbeat'})}\n\n"
