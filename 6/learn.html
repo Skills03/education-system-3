@@ -462,6 +462,10 @@
             const message = messageInput.value.trim();
             if (!message || !sessionId) return;
 
+            // Prevent double-sending
+            if (sendBtn.disabled) return;
+            sendBtn.disabled = true;
+
             addMessage('student', message);
             messageInput.value = '';
 
@@ -477,6 +481,7 @@
             } catch (error) {
                 updateStatus('Error sending message', 'error');
                 console.error(error);
+                sendBtn.disabled = false; // Re-enable on error
             }
         }
 
