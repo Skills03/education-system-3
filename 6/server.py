@@ -140,38 +140,66 @@ class UnifiedSession:
         self.messages = []
 
     async def teach(self, instruction):
-        """Teach using master agent with strict tool limiting"""
+        """Teach using master agent with strict tool limiting via structured outputs"""
         logger.info(f"[{self.session_id[:8]}] Teaching: {instruction}")
 
         try:
-            # PHASE 1: Planning - Ask which tools to use (MAX 2)
-            planning_prompt = f"""For this request: "{instruction}"
+            # PHASE 1: Planning - Get structured JSON with tool selection
+            planning_prompt = f"""Analyze this teaching request: "{instruction}"
 
-You must choose EXACTLY 1-2 tools maximum to teach this effectively.
+Choose the 1-2 MOST EFFECTIVE tools to teach this concept. Consider:
+- Simple questions (What is X?) → 1 tool (just code example)
+- Medium topics (data structures) → 2 tools (visual + code)
+- Complex topics (algorithms) → 2 tools (diagram + code)
 
-Respond ONLY with a comma-separated list of tool names. Examples:
-- "mcp__scrimba__show_code_example"
-- "mcp__visual__generate_data_structure_viz,mcp__scrimba__show_code_example"
+Available tool categories:
+- Visual: generate_concept_diagram, generate_data_structure_viz, generate_algorithm_flowchart
+- Code: show_code_example, run_code_simulation, show_concept_progression
+- Project: project_kickoff, code_live_increment, demonstrate_code
 
-Choose wisely - you get ONLY these tools. List your 1-2 tools:"""
+Respond with VALID JSON ONLY (no other text):
+{{
+  "selected_tools": ["mcp__category__tool_name_1", "mcp__category__tool_name_2"],
+  "reasoning": "brief explanation"
+}}
+
+Your JSON response:"""
 
             selected_tools = []
+            response_text = ""
+
             async with ClaudeSDKClient(options=self.options) as planner:
                 await planner.query(planning_prompt)
                 async for msg in planner.receive_response():
                     if isinstance(msg, AssistantMessage):
                         for block in msg.content:
                             if isinstance(block, TextBlock):
-                                # Extract tool names from response
-                                tools_text = block.text.strip()
-                                selected_tools = [t.strip() for t in tools_text.split(',') if t.strip().startswith('mcp__')]
-                                break
-                    if selected_tools:
-                        break
+                                response_text += block.text.strip()
 
-            # Limit to max 2 tools
-            selected_tools = selected_tools[:2]
-            logger.info(f"[{self.session_id[:8]}] Selected tools: {selected_tools}")
+            # Parse structured JSON response
+            try:
+                # Extract JSON from response (handle markdown code blocks)
+                json_text = response_text
+                if "```json" in json_text:
+                    json_text = json_text.split("```json")[1].split("```")[0].strip()
+                elif "```" in json_text:
+                    json_text = json_text.split("```")[1].split("```")[0].strip()
+
+                import json
+                plan = json.loads(json_text)
+                selected_tools = plan.get("selected_tools", [])[:2]  # Max 2 tools
+                logger.info(f"[{self.session_id[:8]}] Selected tools: {selected_tools}")
+                logger.info(f"[{self.session_id[:8]}] Reasoning: {plan.get('reasoning', 'N/A')}")
+            except (json.JSONDecodeError, KeyError, IndexError) as e:
+                logger.error(f"[{self.session_id[:8]}] JSON parsing failed: {e}")
+                logger.error(f"[{self.session_id[:8]}] Response: {response_text}")
+                # Fallback: use basic code example only
+                selected_tools = ["mcp__scrimba__show_code_example"]
+
+            # Validate we have at least one tool
+            if not selected_tools:
+                selected_tools = ["mcp__scrimba__show_code_example"]
+                logger.warning(f"[{self.session_id[:8]}] No tools selected, using fallback")
 
             # PHASE 2: Execution - Create restricted options with ONLY selected tools
             restricted_options = ClaudeAgentOptions(
@@ -181,7 +209,7 @@ Choose wisely - you get ONLY these tools. List your 1-2 tools:"""
                     "live_coding": live_coding_tools,
                     "visual": visual_tools,
                 },
-                allowed_tools=selected_tools  # ONLY the 1-2 selected tools
+                allowed_tools=selected_tools  # ONLY the 1-2 selected tools - SDK enforces this
             )
 
             async with ClaudeSDKClient(options=restricted_options) as client:
