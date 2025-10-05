@@ -104,10 +104,22 @@ class UnifiedSession:
 
     def __init__(self, session_id):
         self.session_id = session_id
+        self.tool_count_per_request = 0  # Reset per request
+        self.client = None  # Persistent client for conversation memory
 
-        # Single ClaudeAgentOptions with master agent and ALL tools
         # Set Claude CLI path in environment
         os.environ['PATH'] = f"/root/.nvm/versions/node/v22.20.0/bin:{os.environ.get('PATH', '')}"
+
+        # Tool limiter - enforces max 2 tools per request
+        async def limit_tools(tool_name: str, input_data: dict, context: dict) -> dict:
+            self.tool_count_per_request += 1
+            logger.info(f"[{self.session_id[:8]}] Tool #{self.tool_count_per_request}: {tool_name}")
+
+            if self.tool_count_per_request > 2:
+                logger.warning(f"[{self.session_id[:8]}] DENIED - Exceeded 2-tool limit")
+                return {"behavior": "deny", "message": "Maximum 2 tools reached"}
+
+            return {"behavior": "allow"}
 
         self.options = ClaudeAgentOptions(
             agents={
@@ -136,97 +148,58 @@ class UnifiedSession:
                 "mcp__visual__generate_algorithm_flowchart",
                 "mcp__visual__generate_architecture_diagram",
             ],
+            can_use_tool=limit_tools  # Enforce 2-tool limit per request
         )
         self.messages = []
 
+    async def connect(self):
+        """Establish persistent connection for conversation memory"""
+        if not self.client:
+            self.client = ClaudeSDKClient(options=self.options)
+            await self.client.connect()
+            logger.info(f"[{self.session_id[:8]}] Connected - conversation memory active")
+
+    async def disconnect(self):
+        """Close connection and cleanup"""
+        if self.client:
+            await self.client.disconnect()
+            logger.info(f"[{self.session_id[:8]}] Disconnected")
+            self.client = None
+
     async def teach(self, instruction):
-        """Teach using master agent with strict tool limiting via structured outputs"""
+        """Teach using persistent client with 2-tool limit and conversation memory"""
         logger.info(f"[{self.session_id[:8]}] Teaching: {instruction}")
 
         try:
-            # PHASE 1: Planning - Get structured JSON with tool selection
-            planning_prompt = f"""Analyze this teaching request: "{instruction}"
+            # Ensure client is connected
+            await self.connect()
 
-Choose the 1-2 MOST EFFECTIVE tools to teach this concept. Consider:
-- Simple questions (What is X?) → 1 tool (just code example)
-- Medium topics (data structures) → 2 tools (visual + code)
-- Complex topics (algorithms) → 2 tools (diagram + code)
+            # Reset tool counter for this request
+            self.tool_count_per_request = 0
 
-Available tool categories:
-- Visual: generate_concept_diagram, generate_data_structure_viz, generate_algorithm_flowchart
-- Code: show_code_example, run_code_simulation, show_concept_progression
-- Project: project_kickoff, code_live_increment, demonstrate_code
+            # Query with strong constraint (can_use_tool enforces hard limit)
+            teaching_prompt = f"""Use the master agent: {instruction}
 
-Respond with VALID JSON ONLY (no other text):
-{{
-  "selected_tools": ["mcp__category__tool_name_1", "mcp__category__tool_name_2"],
-  "reasoning": "brief explanation"
-}}
+CRITICAL CONSTRAINT: You have a maximum of 2 tool calls for this response.
+- Simple topic? Use 1 tool
+- Complex topic? Use 2 tools max
+- Choose wisely - can_use_tool will DENY any 3rd tool attempt
 
-Your JSON response:"""
+Remember our previous conversation context."""
 
-            selected_tools = []
-            response_text = ""
+            await self.client.query(teaching_prompt)
 
-            async with ClaudeSDKClient(options=self.options) as planner:
-                await planner.query(planning_prompt)
-                async for msg in planner.receive_response():
-                    if isinstance(msg, AssistantMessage):
-                        for block in msg.content:
-                            if isinstance(block, TextBlock):
-                                response_text += block.text.strip()
+            message_count = 0
+            async for msg in self.client.receive_response():
+                message_count += 1
+                formatted_list = self._format_message(msg)
+                if formatted_list:
+                    for formatted in formatted_list:
+                        self.messages.append(formatted)
+                        if self.session_id in message_queues:
+                            message_queues[self.session_id].append(formatted)
 
-            # Parse structured JSON response
-            try:
-                # Extract JSON from response (handle markdown code blocks)
-                json_text = response_text
-                if "```json" in json_text:
-                    json_text = json_text.split("```json")[1].split("```")[0].strip()
-                elif "```" in json_text:
-                    json_text = json_text.split("```")[1].split("```")[0].strip()
-
-                import json
-                plan = json.loads(json_text)
-                selected_tools = plan.get("selected_tools", [])[:2]  # Max 2 tools
-                logger.info(f"[{self.session_id[:8]}] Selected tools: {selected_tools}")
-                logger.info(f"[{self.session_id[:8]}] Reasoning: {plan.get('reasoning', 'N/A')}")
-            except (json.JSONDecodeError, KeyError, IndexError) as e:
-                logger.error(f"[{self.session_id[:8]}] JSON parsing failed: {e}")
-                logger.error(f"[{self.session_id[:8]}] Response: {response_text}")
-                # Fallback: use basic code example only
-                selected_tools = ["mcp__scrimba__show_code_example"]
-
-            # Validate we have at least one tool
-            if not selected_tools:
-                selected_tools = ["mcp__scrimba__show_code_example"]
-                logger.warning(f"[{self.session_id[:8]}] No tools selected, using fallback")
-
-            # PHASE 2: Execution - Create restricted options with ONLY selected tools
-            restricted_options = ClaudeAgentOptions(
-                agents={"master": MASTER_TEACHER_AGENT},
-                mcp_servers={
-                    "scrimba": scrimba_tools,
-                    "live_coding": live_coding_tools,
-                    "visual": visual_tools,
-                },
-                allowed_tools=selected_tools  # ONLY the 1-2 selected tools - SDK enforces this
-            )
-
-            async with ClaudeSDKClient(options=restricted_options) as client:
-                # Execute teaching with restricted tool set
-                await client.query(f"Use the master agent: {instruction}")
-
-                message_count = 0
-                async for msg in client.receive_response():
-                    message_count += 1
-                    formatted_list = self._format_message(msg)
-                    if formatted_list:
-                        for formatted in formatted_list:
-                            self.messages.append(formatted)
-                            if self.session_id in message_queues:
-                                message_queues[self.session_id].append(formatted)
-
-                logger.info(f"[{self.session_id[:8]}] ✓ Complete! {message_count} messages")
+            logger.info(f"[{self.session_id[:8]}] ✓ Complete! {message_count} messages, {self.tool_count_per_request} tools used")
 
             # Signal completion
             complete_msg = {"type": "complete", "timestamp": datetime.now().isoformat()}
