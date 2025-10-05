@@ -22,7 +22,6 @@ from claude_agent_sdk import (
     ToolResultBlock,
     create_sdk_mcp_server,
 )
-import inspect
 
 # Import tools
 from tools.concept_tools import (
@@ -94,7 +93,7 @@ visual_tools = create_sdk_mcp_server(
 
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*", "allow_headers": "*", "expose_headers": "*"}})
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 sessions = {}
 message_queues = {}
@@ -106,17 +105,11 @@ class UnifiedSession:
     def __init__(self, session_id):
         self.session_id = session_id
 
-        # Get API key from environment
-        api_key = os.environ.get('ANTHROPIC_API_KEY')
-        if not api_key:
-            raise ValueError("ANTHROPIC_API_KEY environment variable not set")
-
         # Single ClaudeAgentOptions with master agent and ALL tools
         # Set Claude CLI path in environment
         os.environ['PATH'] = f"/root/.nvm/versions/node/v22.20.0/bin:{os.environ.get('PATH', '')}"
 
         self.options = ClaudeAgentOptions(
-            api_key=api_key,  # Pass API key to use Anthropic API directly (not Claude Code CLI)
             agents={
                 "master": MASTER_TEACHER_AGENT,
             },
