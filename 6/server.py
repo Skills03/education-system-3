@@ -140,12 +140,52 @@ class UnifiedSession:
         self.messages = []
 
     async def teach(self, instruction):
-        """Teach using master agent with compositional tool use"""
+        """Teach using master agent with strict tool limiting"""
         logger.info(f"[{self.session_id[:8]}] Teaching: {instruction}")
 
         try:
-            async with ClaudeSDKClient(options=self.options) as client:
-                # Use master agent - it decides which tools to use
+            # PHASE 1: Planning - Ask which tools to use (MAX 2)
+            planning_prompt = f"""For this request: "{instruction}"
+
+You must choose EXACTLY 1-2 tools maximum to teach this effectively.
+
+Respond ONLY with a comma-separated list of tool names. Examples:
+- "mcp__scrimba__show_code_example"
+- "mcp__visual__generate_data_structure_viz,mcp__scrimba__show_code_example"
+
+Choose wisely - you get ONLY these tools. List your 1-2 tools:"""
+
+            selected_tools = []
+            async with ClaudeSDKClient(options=self.options) as planner:
+                await planner.query(planning_prompt)
+                async for msg in planner.receive_response():
+                    if isinstance(msg, AssistantMessage):
+                        for block in msg.content:
+                            if isinstance(block, TextBlock):
+                                # Extract tool names from response
+                                tools_text = block.text.strip()
+                                selected_tools = [t.strip() for t in tools_text.split(',') if t.strip().startswith('mcp__')]
+                                break
+                    if selected_tools:
+                        break
+
+            # Limit to max 2 tools
+            selected_tools = selected_tools[:2]
+            logger.info(f"[{self.session_id[:8]}] Selected tools: {selected_tools}")
+
+            # PHASE 2: Execution - Create restricted options with ONLY selected tools
+            restricted_options = ClaudeAgentOptions(
+                agents={"master": MASTER_TEACHER_AGENT},
+                mcp_servers={
+                    "scrimba": scrimba_tools,
+                    "live_coding": live_coding_tools,
+                    "visual": visual_tools,
+                },
+                allowed_tools=selected_tools  # ONLY the 1-2 selected tools
+            )
+
+            async with ClaudeSDKClient(options=restricted_options) as client:
+                # Execute teaching with restricted tool set
                 await client.query(f"Use the master agent: {instruction}")
 
                 message_count = 0
