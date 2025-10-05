@@ -22,6 +22,11 @@ from claude_agent_sdk import (
     ToolResultBlock,
     create_sdk_mcp_server,
 )
+from claude_agent_sdk.types import (
+    PermissionResultAllow,
+    PermissionResultDeny,
+    ToolPermissionContext,
+)
 
 # Import tools
 from tools.concept_tools import (
@@ -111,15 +116,23 @@ class UnifiedSession:
         os.environ['PATH'] = f"/root/.nvm/versions/node/v22.20.0/bin:{os.environ.get('PATH', '')}"
 
         # Tool limiter - enforces max 2 tools per request
-        async def limit_tools(tool_name: str, input_data: dict, context: dict) -> dict:
+        async def limit_tools(
+            tool_name: str,
+            input_data: dict[str, any],
+            context: ToolPermissionContext
+        ) -> PermissionResultAllow | PermissionResultDeny:
             self.tool_count_per_request += 1
             logger.info(f"[{self.session_id[:8]}] Tool #{self.tool_count_per_request}: {tool_name}")
 
             if self.tool_count_per_request > 2:
                 logger.warning(f"[{self.session_id[:8]}] DENIED - Exceeded 2-tool limit")
-                return {"behavior": "deny", "message": "Maximum 2 tools reached"}
+                return PermissionResultDeny(
+                    behavior="deny",
+                    message=f"Maximum 2 tools per response. Already used: {self.tool_count_per_request - 1}",
+                    interrupt=False
+                )
 
-            return {"behavior": "allow"}
+            return PermissionResultAllow(behavior="allow")
 
         self.options = ClaudeAgentOptions(
             agents={
