@@ -3,6 +3,7 @@
 
 import asyncio
 import json
+import queue
 from datetime import datetime
 from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
@@ -204,7 +205,7 @@ class UnifiedSession:
 
             # Send routing notification to frontend
             if self.session_id in message_queues:
-                message_queues[self.session_id].append({
+                message_queues[self.session_id].put({
                     "type": "routing",
                     "agent": selected_agent,
                     "confidence": confidence,
@@ -216,19 +217,21 @@ class UnifiedSession:
             knowledge_context = self.knowledge.get_context_summary()
             logger.info(f"[{self.session_id[:8]}] Knowledge: {knowledge_context}")
 
-            # Get enhanced agent prompt with context (SDK-native)
-            enhanced_prompt = get_enhanced_prompt(selected_agent, knowledge_context)
+            # Build context-aware instruction (NO agent mutation - thread-safe)
+            contextual_instruction = f"""## Student Context:
+{knowledge_context if knowledge_context else "New student - no prior knowledge"}
 
-            # Update agent with contextual prompt
-            self.agents[selected_agent] = AgentDefinition(
-                description=self.agents[selected_agent].description,
-                prompt=enhanced_prompt,
-                tools=self.agents[selected_agent].tools,
-                model=self.agents[selected_agent].model
-            )
+## Request:
+{instruction}
 
-            # Query with contextual agent
-            await self.client.query(f"Use the {selected_agent} agent: {instruction}")
+## Guidelines:
+- Max 3 concepts per response (cognitive load limit)
+- Max 2 tools per response (focus on quality)
+- Build on what student already knows
+- Sequential tool usage (each builds on previous)"""
+
+            # Query with explicit agent selection (SDK-native routing)
+            await self.client.query(contextual_instruction, agent=selected_agent)
 
             message_count = 0
             async for msg in self.client.receive_response():
@@ -245,7 +248,7 @@ class UnifiedSession:
                     for formatted in formatted_list:
                         self.messages.append(formatted)
                         if self.session_id in message_queues:
-                            message_queues[self.session_id].append(formatted)
+                            message_queues[self.session_id].put(formatted)
 
             status = self.concept_permission.tracker.get_status()
             logger.info(f"[{self.session_id[:8]}] ✓ Complete! {message_count} messages, {status['concept_count']} concepts, {status['tools_used']} tools")
@@ -265,7 +268,7 @@ class UnifiedSession:
             complete_msg = {"type": "complete", "timestamp": datetime.now().isoformat()}
             self.messages.append(complete_msg)
             if self.session_id in message_queues:
-                message_queues[self.session_id].append(complete_msg)
+                message_queues[self.session_id].put(complete_msg)
 
         except Exception as e:
             logger.error(f"[{self.session_id[:8]}] ❌ Error: {e}")
@@ -276,7 +279,7 @@ class UnifiedSession:
                 "timestamp": datetime.now().isoformat()
             }
             if self.session_id in message_queues:
-                message_queues[self.session_id].append(error_msg)
+                message_queues[self.session_id].put(error_msg)
 
     def _format_message(self, msg):
         """Format message for frontend"""
@@ -341,7 +344,7 @@ def start_session():
     session_id = str(uuid.uuid4())
     session = UnifiedSession(session_id)
     sessions[session_id] = session
-    message_queues[session_id] = []
+    message_queues[session_id] = queue.Queue()  # Thread-safe queue
 
     logger.info(f"Session created: {session_id}")
     return jsonify({
@@ -379,37 +382,32 @@ def teach():
 
 @app.route('/api/stream/<session_id>')
 def stream(session_id):
-    """Unified SSE stream with pacing delays for cognitive absorption"""
+    """Unified SSE stream with pacing delays for cognitive absorption - THREAD-SAFE"""
     if session_id not in message_queues:
         return jsonify({"error": "Session not found"}), 404
 
     def generate():
-        queue = message_queues[session_id]
-        sent_count = 0
-        heartbeat_count = 0
+        import time
+        msg_queue = message_queues[session_id]
         last_msg_type = None
 
         while True:  # Keep stream alive indefinitely
-            if len(queue) > sent_count:
-                for msg in queue[sent_count:]:
-                    current_msg_type = msg.get('type')
+            try:
+                # Non-blocking atomic dequeue
+                msg = msg_queue.get_nowait()
+                current_msg_type = msg.get('type')
 
-                    # Add pacing delay between tool outputs for cognitive absorption
-                    if last_msg_type == 'output' and current_msg_type in ['action', 'teacher']:
-                        import time
-                        time.sleep(2.0)  # 2-second absorption delay after tool output
+                # Add pacing delay between tool outputs for cognitive absorption
+                if last_msg_type == 'output' and current_msg_type in ['action', 'teacher']:
+                    time.sleep(2.0)  # 2-second absorption delay after tool output
 
-                    yield f"data: {json.dumps(msg)}\n\n"
-                    sent_count += 1
-                    last_msg_type = current_msg_type
+                yield f"data: {json.dumps(msg)}\n\n"
+                last_msg_type = current_msg_type
 
-                    # Don't close stream on complete - allow multiple teach requests
-                heartbeat_count = 0
-            else:
+            except queue.Empty:
+                # No messages available - send heartbeat
                 yield f"data: {json.dumps({'type': 'heartbeat'})}\n\n"
-                heartbeat_count += 1
-            import time
-            time.sleep(0.5)
+                time.sleep(0.5)
 
     return Response(generate(), mimetype='text/event-stream')
 

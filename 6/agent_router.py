@@ -28,6 +28,11 @@ class AgentRouter:
         Returns:
             (agent_name, confidence_score)
         """
+        # Handle None or empty query
+        if not query:
+            logger.warning("[Router] Empty query → defaulting to EXPLAINER")
+            return "explainer", 0.50
+
         query_lower = query.lower()
 
         # 1. CODE DETECTION (highest priority) - student submitting code
