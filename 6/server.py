@@ -1,20 +1,15 @@
 #!/usr/bin/env python3
-"""Unified Learning Server - All 3 teaching modes on ONE port"""
+"""Unified Learning Server - Cognitive Teaching System"""
 
 import asyncio
 import json
 from datetime import datetime
-from flask import Flask, request, jsonify, Response, session
+from flask import Flask, request, jsonify, Response
 from flask_cors import CORS
 import uuid
 import traceback
 import logging
 import os
-from functools import wraps
-
-# Import auth database and email service
-from auth_db import AuthDB
-from email_service import EmailService
 
 # Import concept tracking system
 from concept_tracker import ConceptBasedPermissionSystem
@@ -118,40 +113,12 @@ visual_tools = create_sdk_mcp_server(
 
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production-' + os.urandom(24).hex())
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-' + os.urandom(24).hex())
 CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
-# Initialize auth database and email service
-auth_db = AuthDB()
-email_service = EmailService()
-
-# === AUTH TOGGLE === (3-line toggle to enable/disable ALL authentication)
-AUTH_ENABLED = os.environ.get('AUTH_ENABLED', 'false').lower() == 'true'
-# Set ENV AUTH_ENABLED=true in Dockerfile to enable auth, false to disable
-# ==================
-
+# Session storage
 sessions = {}
 message_queues = {}
-
-
-# ===== AUTHENTICATION MIDDLEWARE =====
-
-def login_required(f):
-    """Decorator to require authentication (bypassed if AUTH_ENABLED=false)"""
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not AUTH_ENABLED:  # 3-line toggle: bypass auth entirely
-            request.current_user = {'id': 1, 'username': 'anonymous', 'email': 'anonymous@localhost'}
-            return f(*args, **kwargs)
-        token = request.cookies.get('session_token') or request.headers.get('Authorization', '').replace('Bearer ', '')
-        if not token:
-            return jsonify({"error": "Authentication required"}), 401
-        user = auth_db.get_user_by_token(token)
-        if not user:
-            return jsonify({"error": "Invalid or expired session"}), 401
-        request.current_user = user
-        return f(*args, **kwargs)
-    return decorated_function
 
 
 class UnifiedSession:
@@ -381,108 +348,6 @@ Remember our previous conversation context."""
         return result if result else None
 
 
-# ===== AUTHENTICATION ENDPOINTS =====
-
-@app.route('/api/auth/signup', methods=['POST'])
-def signup():
-    """Create new user account and send verification email"""
-    data = request.json
-
-    username = data.get('username', '').strip()
-    email = data.get('email', '').strip()
-    password = data.get('password', '')
-
-    # Validation
-    if not username or len(username) < 3:
-        return jsonify({"error": "Username must be at least 3 characters"}), 400
-    if not email or '@' not in email:
-        return jsonify({"error": "Valid email required"}), 400
-    if not password or len(password) < 6:
-        return jsonify({"error": "Password must be at least 6 characters"}), 400
-
-    result = auth_db.create_user(username, email, password)
-
-    if result['success']:
-        # Auto-verify and login
-        auth_db.verify_email(result['verification_token'])
-        auth_result = auth_db.authenticate(username, password)
-        token = auth_db.create_session_token(auth_result['user']['id'])
-        response = jsonify({"success": True, "message": "Account created successfully", "user": auth_result['user']})
-        response.set_cookie('session_token', token, httponly=True, samesite='Lax', max_age=30*24*60*60)
-        return response
-    else:
-        return jsonify({"error": result['error']}), 400
-
-
-@app.route('/api/auth/login', methods=['POST'])
-def login():
-    """Login user"""
-    data = request.json
-
-    username = data.get('username', '').strip()
-    password = data.get('password', '')
-
-    if not username or not password:
-        return jsonify({"error": "Username and password required"}), 400
-
-    result = auth_db.authenticate(username, password)
-
-    if result['success']:
-        token = auth_db.create_session_token(result['user']['id'])
-
-        response = jsonify({
-            "success": True,
-            "message": "Logged in successfully",
-            "user": result['user']
-        })
-        response.set_cookie('session_token', token, httponly=True, samesite='Lax', max_age=30*24*60*60)
-        return response
-    else:
-        return jsonify({"error": result['error']}), 401
-
-
-@app.route('/api/auth/logout', methods=['POST'])
-def logout():
-    """Logout user"""
-    token = request.cookies.get('session_token')
-
-    if token:
-        auth_db.delete_session(token)
-
-    response = jsonify({"success": True, "message": "Logged out successfully"})
-    response.set_cookie('session_token', '', expires=0)
-    return response
-
-
-@app.route('/api/auth/me', methods=['GET'])
-@login_required
-def get_current_user():
-    """Get current logged-in user"""
-    return jsonify({
-        "success": True,
-        "user": request.current_user
-    })
-
-
-@app.route('/api/auth/verify', methods=['GET'])
-def verify_email():
-    """Verify email address via token from email link"""
-    token = request.args.get('token')
-
-    if not token:
-        return jsonify({"error": "Verification token required"}), 400
-
-    result = auth_db.verify_email(token)
-
-    if result['success']:
-        return jsonify({
-            "success": True,
-            "message": "Email verified successfully! You can now log in."
-        })
-    else:
-        return jsonify({"error": result['error']}), 400
-
-
 # ===== FRONTEND ROUTES =====
 
 @app.route('/')
@@ -500,26 +365,23 @@ def learn():
 
 
 @app.route('/api/session/start', methods=['POST'])
-@login_required
 def start_session():
-    """Create new session with master agent (requires authentication)"""
+    """Create new teaching session"""
     session_id = str(uuid.uuid4())
     session = UnifiedSession(session_id)
     sessions[session_id] = session
     message_queues[session_id] = []
 
-    logger.info(f"Session created: {session_id} for user: {request.current_user['username']}")
+    logger.info(f"Session created: {session_id}")
     return jsonify({
         "session_id": session_id,
-        "status": "ready",
-        "user": request.current_user['username']
+        "status": "ready"
     })
 
 
 @app.route('/api/teach', methods=['POST'])
-@login_required
 def teach():
-    """Unified teaching endpoint for all modes (requires authentication)"""
+    """Unified teaching endpoint for all modes"""
     data = request.json
     session_id = data.get('session_id')
     message = data.get('message')
@@ -583,9 +445,10 @@ def stream(session_id):
 
 if __name__ == '__main__':
     print("=" * 80)
-    print("🎓 SPECIALIZED TEACHING SYSTEM - INTELLIGENT AGENT ROUTING")
+    print("🎓 COGNITIVE TEACHING SYSTEM - NO AUTH REQUIRED")
     print("=" * 80)
     print("\n📱 Server: http://localhost:5000")
+    print("🌐 Open to all - No signup/login required")
     print("\n🤖 SPECIALIZED AGENTS (Auto-routed):")
     print("  • 📚 EXPLAINER    - Teaches concepts, builds mental models")
     print("  • 🔍 REVIEWER     - Analyzes code, provides feedback")
@@ -599,7 +462,7 @@ if __name__ == '__main__':
     print("  • Concept-based limits    (max 3 concepts per response)")
     print("  • Sequential tool chains  (each tool builds on previous)")
     print("  • Pacing delays           (2s absorption time)")
-    print("  • Session-scoped memory   (.claude/sessions/{session_id}_knowledge.md)")
+    print("  • Session-scoped memory   (tracks your progress per session)")
     print("\n🎯 INTELLIGENT ROUTING:")
     print("  'Explain X'        → Explainer Agent")
     print("  'Check my code'    → Reviewer Agent")
