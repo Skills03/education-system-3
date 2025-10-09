@@ -1,0 +1,36 @@
+---
+version: "2.0"
+
+services:
+  teacher:
+    # Deploy by EXACT SHA256 - immutable!
+    image: skills003/teacher-app@sha256:43b75bb596c36e54194899f6c0f2b190732e58cffeff497703f532faccbf4a65
+    expose:
+      - port: 5000
+        as: 80
+        to:
+          - global: true
+
+profiles:
+  compute:
+    teacher:
+      resources:
+        cpu:
+          units: 1
+        memory:
+          size: 1Gi
+        storage:
+          size: 1Gi
+
+  placement:
+    akash:
+      pricing:
+        teacher:
+          denom: uakt
+          amount: 1000
+
+deployment:
+  teacher:
+    akash:
+      profile: teacher
+      count: 1

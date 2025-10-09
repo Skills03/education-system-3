@@ -35,4 +35,18 @@ Thumbs.db
 # Project specific
 6/tools/
 generated-image.png
+
+# Secrets and sensitive data
 .env
+*.env
+.env.*
+!.env.example
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Docker files with baked secrets
+Dockerfile.immutable
+**/Dockerfile.immutable

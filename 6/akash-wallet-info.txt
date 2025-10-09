@@ -1,0 +1,12 @@
+
+- name: deployer
+  type: local
+  address: akash1ftq78cgelwxky3dgq8nr4rlfpxta66fp6a09fj
+  pubkey: '{"@type":"/cosmos.crypto.secp256k1.PubKey","key":"AtVURxk4lh1SZU3qeKD6Edzp7ARsbX4t6FzDOjUCBC8E"}'
+  mnemonic: ""
+
+
+**Important** write this mnemonic phrase in a safe place.
+It is the only way to recover your account if you ever forget your password.
+
+roof banana science gas vapor upgrade giant civil slam enough kangaroo romance primary milk dirt ugly label walk punch blast virus thunder coin syrup

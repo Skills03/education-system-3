@@ -4,12 +4,17 @@
 import asyncio
 import json
 from datetime import datetime
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, Response, session
 from flask_cors import CORS
 import uuid
 import traceback
 import logging
 import os
+from functools import wraps
+
+# Import auth database and email service
+from auth_db import AuthDB
+from email_service import EmailService
 
 from claude_agent_sdk import (
     AssistantMessage,
@@ -98,10 +103,38 @@ visual_tools = create_sdk_mcp_server(
 
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production-' + os.urandom(24).hex())
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+
+# Initialize auth database and email service
+auth_db = AuthDB()
+email_service = EmailService()
 
 sessions = {}
 message_queues = {}
+
+
+# ===== AUTHENTICATION MIDDLEWARE =====
+
+def login_required(f):
+    """Decorator to require authentication"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Check for session token in cookies or Authorization header
+        token = request.cookies.get('session_token') or request.headers.get('Authorization', '').replace('Bearer ', '')
+
+        if not token:
+            return jsonify({"error": "Authentication required"}), 401
+
+        user = auth_db.get_user_by_token(token)
+        if not user:
+            return jsonify({"error": "Invalid or expired session"}), 401
+
+        # Store user in request context
+        request.current_user = user
+        return f(*args, **kwargs)
+
+    return decorated_function
 
 
 class UnifiedSession:
@@ -272,6 +305,115 @@ Remember our previous conversation context."""
         return result if result else None
 
 
+# ===== AUTHENTICATION ENDPOINTS =====
+
+@app.route('/api/auth/signup', methods=['POST'])
+def signup():
+    """Create new user account and send verification email"""
+    data = request.json
+
+    username = data.get('username', '').strip()
+    email = data.get('email', '').strip()
+    password = data.get('password', '')
+
+    # Validation
+    if not username or len(username) < 3:
+        return jsonify({"error": "Username must be at least 3 characters"}), 400
+    if not email or '@' not in email:
+        return jsonify({"error": "Valid email required"}), 400
+    if not password or len(password) < 6:
+        return jsonify({"error": "Password must be at least 6 characters"}), 400
+
+    result = auth_db.create_user(username, email, password)
+
+    if result['success']:
+        # Send verification email
+        email_result = email_service.send_verification_email(
+            result['email'],
+            username,
+            result['verification_token']
+        )
+
+        return jsonify({
+            "success": True,
+            "message": "Account created! Please check your email to verify your account.",
+            "email_sent": email_result.get('success', False)
+        })
+    else:
+        return jsonify({"error": result['error']}), 400
+
+
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    """Login user"""
+    data = request.json
+
+    username = data.get('username', '').strip()
+    password = data.get('password', '')
+
+    if not username or not password:
+        return jsonify({"error": "Username and password required"}), 400
+
+    result = auth_db.authenticate(username, password)
+
+    if result['success']:
+        token = auth_db.create_session_token(result['user']['id'])
+
+        response = jsonify({
+            "success": True,
+            "message": "Logged in successfully",
+            "user": result['user']
+        })
+        response.set_cookie('session_token', token, httponly=True, samesite='Lax', max_age=30*24*60*60)
+        return response
+    else:
+        return jsonify({"error": result['error']}), 401
+
+
+@app.route('/api/auth/logout', methods=['POST'])
+def logout():
+    """Logout user"""
+    token = request.cookies.get('session_token')
+
+    if token:
+        auth_db.delete_session(token)
+
+    response = jsonify({"success": True, "message": "Logged out successfully"})
+    response.set_cookie('session_token', '', expires=0)
+    return response
+
+
+@app.route('/api/auth/me', methods=['GET'])
+@login_required
+def get_current_user():
+    """Get current logged-in user"""
+    return jsonify({
+        "success": True,
+        "user": request.current_user
+    })
+
+
+@app.route('/api/auth/verify', methods=['GET'])
+def verify_email():
+    """Verify email address via token from email link"""
+    token = request.args.get('token')
+
+    if not token:
+        return jsonify({"error": "Verification token required"}), 400
+
+    result = auth_db.verify_email(token)
+
+    if result['success']:
+        return jsonify({
+            "success": True,
+            "message": "Email verified successfully! You can now log in."
+        })
+    else:
+        return jsonify({"error": result['error']}), 400
+
+
+# ===== FRONTEND ROUTES =====
+
 @app.route('/')
 def index():
     """Serve the main frontend"""
@@ -287,20 +429,26 @@ def learn():
 
 
 @app.route('/api/session/start', methods=['POST'])
+@login_required
 def start_session():
-    """Create new session with master agent"""
+    """Create new session with master agent (requires authentication)"""
     session_id = str(uuid.uuid4())
     session = UnifiedSession(session_id)
     sessions[session_id] = session
     message_queues[session_id] = []
 
-    logger.info(f"Session created: {session_id}")
-    return jsonify({"session_id": session_id, "status": "ready"})
+    logger.info(f"Session created: {session_id} for user: {request.current_user['username']}")
+    return jsonify({
+        "session_id": session_id,
+        "status": "ready",
+        "user": request.current_user['username']
+    })
 
 
 @app.route('/api/teach', methods=['POST'])
+@login_required
 def teach():
-    """Unified teaching endpoint for all modes"""
+    """Unified teaching endpoint for all modes (requires authentication)"""
     data = request.json
     session_id = data.get('session_id')
     message = data.get('message')
