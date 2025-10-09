@@ -18,6 +18,7 @@ from concept_tracker import ConceptBasedPermissionSystem
 from student_knowledge import StudentKnowledgeTracker
 
 from claude_agent_sdk import (
+    AgentDefinition,
     AssistantMessage,
     ClaudeAgentOptions,
     ClaudeSDKClient,
@@ -55,14 +56,8 @@ from tools.visual_tools import (
     generate_architecture_diagram,
 )
 
-# Import agents
-from agents.master_agent import MASTER_TEACHER_AGENT
-from agents.specialized_agents import (
-    EXPLAINER_AGENT,
-    CODE_REVIEWER_AGENT,
-    CHALLENGER_AGENT,
-    ASSESSOR_AGENT,
-)
+# Import agent configuration (dynamic, SDK-native)
+from agent_config import create_agent_definitions, get_enhanced_prompt, get_all_tools
 
 # Import agent router
 from agent_router import AgentRouter
@@ -159,39 +154,19 @@ class UnifiedSession:
                     interrupt=False
                 )
 
+        # Create agents dynamically from configuration
+        self.agents = create_agent_definitions()
+
         self.options = ClaudeAgentOptions(
-            agents={
-                "master": MASTER_TEACHER_AGENT,  # Legacy - kept for compatibility
-                "explainer": EXPLAINER_AGENT,
-                "reviewer": CODE_REVIEWER_AGENT,
-                "challenger": CHALLENGER_AGENT,
-                "assessor": ASSESSOR_AGENT,
-            },
+            agents=self.agents,  # Dynamic agent definitions
             mcp_servers={
                 "scrimba": scrimba_tools,
                 "live_coding": live_coding_tools,
                 "visual": visual_tools,
             },
-            allowed_tools=[
-                # Concept tools
-                "mcp__scrimba__show_code_example",
-                "mcp__scrimba__run_code_simulation",
-                "mcp__scrimba__show_concept_progression",
-                "mcp__scrimba__create_interactive_challenge",
-                # Project tools
-                "mcp__live_coding__project_kickoff",
-                "mcp__live_coding__code_live_increment",
-                "mcp__live_coding__demonstrate_code",
-                "mcp__live_coding__student_challenge",
-                "mcp__live_coding__review_student_work",
-                # Visual tools
-                "mcp__visual__generate_concept_diagram",
-                "mcp__visual__generate_data_structure_viz",
-                "mcp__visual__generate_algorithm_flowchart",
-                "mcp__visual__generate_architecture_diagram",
-            ],
+            allowed_tools=get_all_tools(),  # Auto-collected from agent configs
             can_use_tool=limit_tools,  # Concept-based permission system
-            setting_sources=["project"]  # Enable memory persistence via .claude/CLAUDE.md
+            setting_sources=["project"]  # Enable memory persistence
         )
         self.messages = []
 
@@ -241,23 +216,19 @@ class UnifiedSession:
             knowledge_context = self.knowledge.get_context_summary()
             logger.info(f"[{self.session_id[:8]}] Knowledge: {knowledge_context}")
 
-            # Query with selected specialist agent and concept-based constraints
-            teaching_prompt = f"""Use the {selected_agent} agent: {instruction}
+            # Get enhanced agent prompt with context (SDK-native)
+            enhanced_prompt = get_enhanced_prompt(selected_agent, knowledge_context)
 
-STUDENT KNOWLEDGE CONTEXT:
-{knowledge_context}
+            # Update agent with contextual prompt
+            self.agents[selected_agent] = AgentDefinition(
+                description=self.agents[selected_agent].description,
+                prompt=enhanced_prompt,
+                tools=self.agents[selected_agent].tools,
+                model=self.agents[selected_agent].model
+            )
 
-CRITICAL: Follow concept-based teaching protocol:
-1. DECLARE concepts first: "This response teaches N concepts: ..."
-2. Maximum 3 concepts per response (working memory limit)
-3. Use sequential tool chaining (each tool builds on previous)
-4. Maintain consistent teaching patterns
-5. Don't re-teach mastered concepts unless reviewing
-6. Address weak areas and prerequisites first
-
-Remember our previous conversation context."""
-
-            await self.client.query(teaching_prompt)
+            # Query with contextual agent
+            await self.client.query(f"Use the {selected_agent} agent: {instruction}")
 
             message_count = 0
             async for msg in self.client.receive_response():
@@ -444,31 +415,40 @@ def stream(session_id):
 
 
 if __name__ == '__main__':
+    # Get dynamic agent info
+    from agent_config import AGENT_CONFIGS
+    agent_count = len(AGENT_CONFIGS)
+    tool_count = len(get_all_tools())
+
     print("=" * 80)
-    print("🎓 COGNITIVE TEACHING SYSTEM - NO AUTH REQUIRED")
+    print("🎓 COGNITIVE TEACHING SYSTEM - SDK-NATIVE ARCHITECTURE")
     print("=" * 80)
     print("\n📱 Server: http://localhost:5000")
     print("🌐 Open to all - No signup/login required")
-    print("\n🤖 SPECIALIZED AGENTS (Auto-routed):")
-    print("  • 📚 EXPLAINER    - Teaches concepts, builds mental models")
-    print("  • 🔍 REVIEWER     - Analyzes code, provides feedback")
-    print("  • 🎯 CHALLENGER   - Creates practice problems")
-    print("  • 📊 ASSESSOR     - Tests understanding, identifies gaps")
-    print("\n🔧 13 TEACHING TOOLS:")
-    print("  • 4 Visual Tools     - Diagrams & visualizations")
-    print("  • 4 Concept Tools    - Examples & simulations")
-    print("  • 5 Project Tools    - Live coding & review")
+
+    print(f"\n🤖 DYNAMIC AGENTS ({agent_count} loaded):")
+    for name, config in AGENT_CONFIGS.items():
+        print(f"  • {name.upper():12} - {config['description'][:50]}...")
+
+    print(f"\n🔧 TEACHING TOOLS ({tool_count} total):")
+    print("  • Visual Tools    - Diagrams & visualizations")
+    print("  • Concept Tools   - Examples & simulations")
+    print("  • Project Tools   - Live coding & review")
+
     print("\n🧠 COGNITIVE FEATURES:")
-    print("  • Concept-based limits    (max 3 concepts per response)")
-    print("  • Sequential tool chains  (each tool builds on previous)")
-    print("  • Pacing delays           (2s absorption time)")
-    print("  • Session-scoped memory   (tracks your progress per session)")
+    print("  • Flexible concept limits    (soft 3-concept guideline)")
+    print("  • Sequential tool chains     (each builds on previous)")
+    print("  • Pacing delays              (2s absorption time)")
+    print("  • Session-scoped memory      (.claude/sessions/)")
+    print("  • Context-aware prompts      (adapts to student knowledge)")
+
     print("\n🎯 INTELLIGENT ROUTING:")
-    print("  'Explain X'        → Explainer Agent")
-    print("  'Check my code'    → Reviewer Agent")
-    print("  'Challenge me'     → Challenger Agent")
-    print("  'Test me'          → Assessor Agent")
-    print("\n✨ 4 Specialist Agents, 13 Tools, Infinite Learning")
+    print("  'Explain X'        → Auto-routes to best agent")
+    print("  'Check my code'    → Detects code → Reviewer")
+    print("  'Challenge me'     → Detects intent → Challenger")
+    print("  'Test me'          → Detects assessment → Assessor")
+
+    print(f"\n✨ {agent_count} Dynamic Agents, {tool_count} Tools, Zero Hardcoding")
     print("💡 Ctrl+C to stop\n")
 
     port = int(os.environ.get('PORT', 5000))

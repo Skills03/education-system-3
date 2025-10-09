@@ -23,24 +23,47 @@ class ConceptTracker:
         self.has_declaration = False
 
     def parse_concept_declaration(self, text: str) -> Optional[List[str]]:
-        """Extract concept declaration from agent's text
+        """Extract concept declaration from agent's text (flexible patterns)
 
-        Expected format:
-        "This response teaches 3 concepts: variables, assignment, data types"
-        or
-        "I'll teach 2 concepts: functions and return values"
+        Accepts multiple formats:
+        - "This response teaches 3 concepts: variables, assignment, data types"
+        - "I'll teach 2 concepts: functions and return values"
+        - "Teaching: variables and loops"
+        - "Covering 2 topics: arrays, indexing"
+        - "Focus on: async/await"
         """
-        # Pattern: "teach(es/ing) N concept(s): concept1, concept2, ..."
-        pattern = r"teach(?:es|ing)?\s+(\d+)\s+concepts?:\s*([^.\n]+)"
-        match = re.search(pattern, text.lower())
+        # Multiple flexible patterns
+        patterns = [
+            # Standard: "teaches N concepts: X, Y"
+            r"teach(?:es|ing)?\s+(\d+)\s+concepts?:\s*([^.\n]+)",
+            # Alternative: "teach/cover/explain: X, Y"
+            r"(?:teach|cover|explain)(?:ing)?:\s*([^.\n]+)",
+            # Topics: "N topics: X, Y"
+            r"(\d+)\s+topics?:\s*([^.\n]+)",
+            # Focus: "focus on: X"
+            r"focus(?:ing)?\s+on:\s*([^.\n]+)",
+            # Will cover: "will cover X and Y"
+            r"will\s+(?:teach|cover|explain)\s+([^.\n]+)",
+        ]
 
-        if match:
-            count = int(match.group(1))
-            concepts_text = match.group(2)
-            concepts = [c.strip() for c in concepts_text.split(',')]
+        for pattern in patterns:
+            match = re.search(pattern, text.lower())
+            if match:
+                # Extract concepts from matched text
+                if len(match.groups()) == 2:
+                    # Has count (e.g., "2 concepts: X, Y")
+                    concepts_text = match.group(2)
+                else:
+                    # No count (e.g., "Teaching: X, Y")
+                    concepts_text = match.group(1)
 
-            logger.info(f"[{self.session_id[:8]}] Declared {count} concepts: {concepts}")
-            return concepts
+                # Split by commas or "and"
+                concepts_text = concepts_text.replace(' and ', ', ')
+                concepts = [c.strip() for c in concepts_text.split(',') if c.strip()]
+
+                if concepts:
+                    logger.info(f"[{self.session_id[:8]}] Declared {len(concepts)} concepts: {concepts}")
+                    return concepts
 
         return None
 
@@ -131,7 +154,7 @@ class ConceptBasedPermissionSystem:
         self.concept_declaration_checked = False
 
     def check_concept_declaration(self, text: str) -> tuple[bool, str]:
-        """Validate that agent declared concepts before using tools"""
+        """Validate concept declaration (optional - graceful fallback)"""
         concepts = self.tracker.parse_concept_declaration(text)
 
         if concepts:
@@ -139,11 +162,17 @@ class ConceptBasedPermissionSystem:
                 self.concept_declaration_checked = True
                 return True, f"Declared {len(concepts)} concepts (within limit)"
             else:
-                return False, f"Too many concepts: {len(concepts)} > {self.tracker.concept_limit}"
+                # Too many concepts - WARN but allow (don't break teaching)
+                logger.warning(f"[{self.session_id[:8]}] Too many concepts: {len(concepts)} > {self.tracker.concept_limit} (allowing anyway)")
+                self.tracker.set_concepts(concepts[:self.tracker.concept_limit])  # Truncate
+                self.concept_declaration_checked = True
+                return True, f"Too many concepts declared, using first {self.tracker.concept_limit}"
 
-        # No declaration found
+        # No declaration found - ALLOW with warning (don't block tools)
         if not self.concept_declaration_checked:
-            return False, "Must declare concepts before using tools (e.g., 'This response teaches 2 concepts: variables, loops')"
+            logger.info(f"[{self.session_id[:8]}] No concept declaration found - proceeding anyway (will infer from tools)")
+            self.concept_declaration_checked = True
+            return True, "No declaration (will infer concepts from teaching)"
 
         return True, "Declaration already checked"
 
