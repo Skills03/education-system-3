@@ -177,24 +177,30 @@ class ConceptBasedPermissionSystem:
         return True, "Declaration already checked"
 
     def can_use_tool(self, tool_name: str, input_data: dict, agent_message: str) -> tuple[bool, str]:
-        """Main permission check - validates concepts and sequencing"""
+        """Main permission check - HARD 2-tool limit + soft concept/sequencing validation"""
 
-        # First tool call triggers concept declaration check
+        # HARD LIMIT: Maximum 2 tools per request
+        HARD_TOOL_LIMIT = 2
+        if len(self.tracker.tools_used) >= HARD_TOOL_LIMIT:
+            logger.warning(f"[{self.session_id[:8]}] ✗ DENIED - Hard limit reached: {HARD_TOOL_LIMIT} tools already used")
+            return False, f"Maximum {HARD_TOOL_LIMIT} tools per response. Focus on quality over quantity."
+
+        # First tool call triggers concept declaration check (soft)
         if len(self.tracker.tools_used) == 0:
             can_use, reason = self.check_concept_declaration(agent_message)
-            if not can_use:
-                return False, reason
+            # Concept declaration is optional, so can_use should always be True
 
-        # Check sequencing (does this tool build on previous?)
+        # Check sequencing (does this tool build on previous?) - SOFT CHECK
         sequencing_valid, sequencing_msg = self.tracker.validate_sequencing(tool_name, input_data)
         if not sequencing_valid:
-            return False, f"Sequencing violation: {sequencing_msg}"
+            # WARN but ALLOW (sequencing is a guideline, not a hard rule)
+            logger.warning(f"[{self.session_id[:8]}] Sequencing warning: {sequencing_msg} (allowing anyway)")
 
         # Record tool usage
         self.tracker.add_tool_usage(tool_name, input_data)
 
-        logger.info(f"[{self.session_id[:8]}] ✓ Tool allowed: {tool_name} ({sequencing_msg})")
-        return True, sequencing_msg
+        logger.info(f"[{self.session_id[:8]}] ✓ Tool allowed ({len(self.tracker.tools_used)}/{HARD_TOOL_LIMIT}): {tool_name}")
+        return True, sequencing_msg if sequencing_valid else "Non-sequential but allowed"
 
     def reset(self):
         """Reset for new request"""
