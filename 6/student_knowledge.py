@@ -49,7 +49,7 @@ class StudentKnowledgeTracker:
 
             # Parse Mastered Concepts
             mastered_match = re.search(
-                r'### Mastered Concepts \(Confident\).*?<!-- .* -->(.*?)---',
+                r'### Mastered Concepts \(Confident\)[^\n]*\n<!-- [^>]* -->\n+(.*?)\n+---',
                 content, re.DOTALL
             )
             if mastered_match:
@@ -63,7 +63,7 @@ class StudentKnowledgeTracker:
 
             # Parse Learning Concepts
             learning_match = re.search(
-                r'### Learning Concepts \(In Progress\).*?<!-- .* -->(.*?)---',
+                r'### Learning Concepts \(In Progress\)[^\n]*\n<!-- [^>]* -->\n+(.*?)\n+---',
                 content, re.DOTALL
             )
             if learning_match:
@@ -77,7 +77,7 @@ class StudentKnowledgeTracker:
 
             # Parse Weak Areas
             weak_match = re.search(
-                r'### Weak Areas \(Needs Review\).*?<!-- .* -->(.*?)---',
+                r'### Weak Areas \(Needs Review\)[^\n]*\n<!-- [^>]* -->\n+(.*?)\n+---',
                 content, re.DOTALL
             )
             if weak_match:
@@ -91,7 +91,7 @@ class StudentKnowledgeTracker:
 
             # Parse Prerequisites
             prereq_match = re.search(
-                r'### Prerequisites Needed.*?<!-- .* -->(.*?)---',
+                r'### Prerequisites Needed[^\n]*\n<!-- [^>]* -->\n+(.*?)\n+---',
                 content, re.DOTALL
             )
             if prereq_match:

@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
-"""Test Intelligent LLM-Based Agent Router"""
+"""Test Intelligent Agent Router"""
 
 import os
+from pathlib import Path
 from agent_router import AgentRouter
 
+# Load .env file
+env_path = Path(__file__).parent / '.env'
+if env_path.exists():
+    from dotenv import load_dotenv
+    load_dotenv(env_path)
+    print(f"✓ Loaded environment from {env_path}")
+
 def test_routing():
-    # Ensure API key is set
-    if not os.environ.get("ANTHROPIC_API_KEY"):
-        print("❌ Error: ANTHROPIC_API_KEY environment variable not set")
-        print("Please set it with: export ANTHROPIC_API_KEY=your_key_here")
-        return False
 
     router = AgentRouter()
 
