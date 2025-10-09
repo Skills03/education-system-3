@@ -155,19 +155,32 @@ class UnifiedSession:
                     interrupt=False
                 )
 
-        # Create agents dynamically from configuration
-        self.agents = create_agent_definitions()
+        # Single adaptive agent with role-switching (SDK doesn't support multi-agent routing)
+        master_agent = AgentDefinition(
+            description="Adaptive programming teacher that switches roles based on student needs",
+            prompt="""You are an adaptive programming teacher. Switch roles based on the request:
+
+**EXPLAINER MODE**: Explain concepts clearly with examples and visuals
+**REVIEWER MODE**: Analyze code and provide constructive feedback
+**CHALLENGER MODE**: Create practice problems matching skill level
+**ASSESSOR MODE**: Test understanding and identify knowledge gaps
+
+Tools available: visual diagrams, code examples, simulations, challenges, code review.
+Max 2 tools per response. Max 3 concepts per response.""",
+            tools=get_all_tools(),
+            model="sonnet"
+        )
 
         self.options = ClaudeAgentOptions(
-            agents=self.agents,  # Dynamic agent definitions
+            agents={"master": master_agent},  # Single adaptive agent
             mcp_servers={
                 "scrimba": scrimba_tools,
                 "live_coding": live_coding_tools,
                 "visual": visual_tools,
             },
-            allowed_tools=get_all_tools(),  # Auto-collected from agent configs
-            can_use_tool=limit_tools,  # Concept-based permission system
-            setting_sources=["project"]  # Enable memory persistence
+            allowed_tools=get_all_tools(),
+            can_use_tool=limit_tools,
+            setting_sources=["project"]
         )
         self.messages = []
 
@@ -197,9 +210,18 @@ class UnifiedSession:
             self.concept_permission.reset()
             self.current_agent_message = ""
 
-            # Route to appropriate specialist agent
-            selected_agent, confidence = self.router.route(instruction, self.messages)
-            routing_msg = self.router.get_routing_explanation(instruction)
+            # Route to appropriate role
+            selected_role, confidence = self.router.route(instruction, self.messages)
+
+            role_map = {
+                "explainer": "EXPLAINER MODE",
+                "reviewer": "REVIEWER MODE",
+                "challenger": "CHALLENGER MODE",
+                "assessor": "ASSESSOR MODE"
+            }
+
+            role_instruction = role_map.get(selected_role, "EXPLAINER MODE")
+            routing_msg = f"🎯 Using {role_instruction} (confidence: {confidence:.0%})"
 
             logger.info(f"[{self.session_id[:8]}] {routing_msg}")
 
@@ -207,7 +229,7 @@ class UnifiedSession:
             if self.session_id in message_queues:
                 message_queues[self.session_id].put({
                     "type": "routing",
-                    "agent": selected_agent,
+                    "agent": selected_role,
                     "confidence": confidence,
                     "content": routing_msg,
                     "timestamp": datetime.now().isoformat()
@@ -217,21 +239,21 @@ class UnifiedSession:
             knowledge_context = self.knowledge.get_context_summary()
             logger.info(f"[{self.session_id[:8]}] Knowledge: {knowledge_context}")
 
-            # Build context-aware instruction (NO agent mutation - thread-safe)
-            contextual_instruction = f"""## Student Context:
+            # Build role-specific instruction
+            contextual_instruction = f"""ACTIVATE {role_instruction}
+
+Student Context:
 {knowledge_context if knowledge_context else "New student - no prior knowledge"}
 
-## Request:
-{instruction}
+Request: {instruction}
 
-## Guidelines:
-- Max 3 concepts per response (cognitive load limit)
-- Max 2 tools per response (focus on quality)
-- Build on what student already knows
+Remember:
+- Max 2 tools per response (quality over quantity)
+- Max 3 concepts per response (cognitive load)
 - Sequential tool usage (each builds on previous)"""
 
-            # Query with explicit agent selection (SDK-native routing)
-            await self.client.query(contextual_instruction, agent=selected_agent)
+            # Query with role-based instruction
+            await self.client.query(contextual_instruction)
 
             message_count = 0
             async for msg in self.client.receive_response():
@@ -257,7 +279,7 @@ class UnifiedSession:
             concepts_taught = self.concept_permission.tracker.declared_concepts
             if concepts_taught:
                 self.knowledge.record_session(
-                    agent_used=selected_agent,
+                    agent_used=selected_role,
                     concepts_taught=concepts_taught,
                     success=True  # TODO: Determine success based on assessment
                 )
