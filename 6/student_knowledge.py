@@ -22,10 +22,27 @@ class ConceptMastery:
 
 
 class StudentKnowledgeTracker:
-    """Manages persistent student knowledge in .claude/CLAUDE.md"""
+    """Manages persistent student knowledge in session-scoped files"""
 
-    def __init__(self, claude_md_path: str = "/home/mahadev/Desktop/dev/education/6/.claude/CLAUDE.md"):
-        self.file_path = claude_md_path
+    def __init__(self, session_id: str = None, base_dir: str = "/home/mahadev/Desktop/dev/education/6/.claude"):
+        """Initialize tracker with session-specific knowledge file
+
+        Args:
+            session_id: Unique session identifier for isolated memory
+            base_dir: Base directory for .claude files
+        """
+        self.session_id = session_id
+        self.base_dir = base_dir
+
+        # Create session-scoped file path
+        if session_id:
+            sessions_dir = os.path.join(base_dir, "sessions")
+            os.makedirs(sessions_dir, exist_ok=True)
+            self.file_path = os.path.join(sessions_dir, f"{session_id}_knowledge.md")
+        else:
+            # Fallback to global file (for testing/backwards compatibility)
+            self.file_path = os.path.join(base_dir, "CLAUDE.md")
+
         self.mastered: List[str] = []
         self.learning: List[str] = []
         self.weak_areas: List[str] = []
@@ -36,6 +53,8 @@ class StudentKnowledgeTracker:
 
         # Load existing knowledge
         self.load()
+
+        logger.info(f"[Knowledge] Initialized for session: {session_id or 'global'} -> {self.file_path}")
 
     def load(self):
         """Load student knowledge from CLAUDE.md"""
@@ -158,13 +177,15 @@ class StudentKnowledgeTracker:
             self.add_learning_concept(concept)
 
     def save(self):
-        """Save student knowledge back to CLAUDE.md"""
+        """Save student knowledge back to session-scoped file"""
         try:
-            # Build updated content
+            # Build updated content with session metadata
+            session_header = f"\n**Session ID:** `{self.session_id}`" if self.session_id else ""
+
             content = f"""# Student Learning Progress Database
 
 ## Purpose
-This file tracks persistent student knowledge across all teaching sessions. The agent reads this to understand what the student already knows and updates it after each session.
+This file tracks persistent student knowledge for this learning session. The agent reads this to understand what the student already knows and updates it after each interaction.{session_header}
 
 ---
 

@@ -163,7 +163,7 @@ class UnifiedSession:
         self.client = None  # Persistent client for conversation memory
         self.current_agent_message = ""  # Store agent text for concept parsing
         self.router = AgentRouter()  # Intelligent agent routing
-        self.knowledge = StudentKnowledgeTracker()  # Persistent student knowledge
+        self.knowledge = StudentKnowledgeTracker(session_id=session_id)  # Session-scoped student knowledge
 
         # Set Claude CLI path in environment
         os.environ['PATH'] = f"/root/.nvm/versions/node/v22.20.0/bin:{os.environ.get('PATH', '')}"
@@ -555,9 +555,8 @@ def stream(session_id):
         sent_count = 0
         heartbeat_count = 0
         last_msg_type = None
-        max_idle_heartbeats = 600  # 5 minutes idle timeout (600 * 0.5s = 300s)
 
-        while heartbeat_count < max_idle_heartbeats:
+        while True:  # Keep stream alive indefinitely
             if len(queue) > sent_count:
                 for msg in queue[sent_count:]:
                     current_msg_type = msg.get('type')
@@ -571,12 +570,7 @@ def stream(session_id):
                     sent_count += 1
                     last_msg_type = current_msg_type
 
-                    # Check if this is a completion message
-                    if current_msg_type == 'complete':
-                        # Reset heartbeat counter to keep stream alive for next request
-                        heartbeat_count = 0
-
-                # Reset heartbeat when we sent messages
+                    # Don't close stream on complete - allow multiple teach requests
                 heartbeat_count = 0
             else:
                 yield f"data: {json.dumps({'type': 'heartbeat'})}\n\n"
@@ -605,7 +599,7 @@ if __name__ == '__main__':
     print("  • Concept-based limits    (max 3 concepts per response)")
     print("  • Sequential tool chains  (each tool builds on previous)")
     print("  • Pacing delays           (2s absorption time)")
-    print("  • Persistent memory       (.claude/CLAUDE.md)")
+    print("  • Session-scoped memory   (.claude/sessions/{session_id}_knowledge.md)")
     print("\n🎯 INTELLIGENT ROUTING:")
     print("  'Explain X'        → Explainer Agent")
     print("  'Check my code'    → Reviewer Agent")
