@@ -16,6 +16,9 @@ from functools import wraps
 from auth_db import AuthDB
 from email_service import EmailService
 
+# Import concept tracking system
+from concept_tracker import ConceptBasedPermissionSystem
+
 from claude_agent_sdk import (
     AssistantMessage,
     ClaudeAgentOptions,
@@ -54,8 +57,17 @@ from tools.visual_tools import (
     generate_architecture_diagram,
 )
 
-# Import master agent
+# Import agents
 from agents.master_agent import MASTER_TEACHER_AGENT
+from agents.specialized_agents import (
+    EXPLAINER_AGENT,
+    CODE_REVIEWER_AGENT,
+    CHALLENGER_AGENT,
+    ASSESSOR_AGENT,
+)
+
+# Import agent router
+from agent_router import AgentRouter
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -110,6 +122,11 @@ CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 auth_db = AuthDB()
 email_service = EmailService()
 
+# === AUTH TOGGLE === (3-line toggle to enable/disable ALL authentication)
+AUTH_ENABLED = os.environ.get('AUTH_ENABLED', 'false').lower() == 'true'
+# Set ENV AUTH_ENABLED=true in Dockerfile to enable auth, false to disable
+# ==================
+
 sessions = {}
 message_queues = {}
 
@@ -117,23 +134,20 @@ message_queues = {}
 # ===== AUTHENTICATION MIDDLEWARE =====
 
 def login_required(f):
-    """Decorator to require authentication"""
+    """Decorator to require authentication (bypassed if AUTH_ENABLED=false)"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Check for session token in cookies or Authorization header
+        if not AUTH_ENABLED:  # 3-line toggle: bypass auth entirely
+            request.current_user = {'id': 1, 'username': 'anonymous', 'email': 'anonymous@localhost'}
+            return f(*args, **kwargs)
         token = request.cookies.get('session_token') or request.headers.get('Authorization', '').replace('Bearer ', '')
-
         if not token:
             return jsonify({"error": "Authentication required"}), 401
-
         user = auth_db.get_user_by_token(token)
         if not user:
             return jsonify({"error": "Invalid or expired session"}), 401
-
-        # Store user in request context
         request.current_user = user
         return f(*args, **kwargs)
-
     return decorated_function
 
 
@@ -142,34 +156,45 @@ class UnifiedSession:
 
     def __init__(self, session_id):
         self.session_id = session_id
-        self.tool_count_per_request = 0  # Reset per request
+        self.concept_permission = ConceptBasedPermissionSystem(session_id)
         self.client = None  # Persistent client for conversation memory
+        self.current_agent_message = ""  # Store agent text for concept parsing
+        self.router = AgentRouter()  # Intelligent agent routing
 
         # Set Claude CLI path in environment
         os.environ['PATH'] = f"/root/.nvm/versions/node/v22.20.0/bin:{os.environ.get('PATH', '')}"
 
-        # Tool limiter - enforces max 2 tools per request
+        # Concept-based permission system
         async def limit_tools(
             tool_name: str,
             input_data: dict[str, any],
             context: ToolPermissionContext
         ) -> PermissionResultAllow | PermissionResultDeny:
-            self.tool_count_per_request += 1
-            logger.info(f"[{self.session_id[:8]}] Tool #{self.tool_count_per_request}: {tool_name}")
+            # Check concept limit and sequencing
+            can_use, reason = self.concept_permission.can_use_tool(
+                tool_name,
+                input_data,
+                self.current_agent_message
+            )
 
-            if self.tool_count_per_request > 2:
-                logger.warning(f"[{self.session_id[:8]}] DENIED - Exceeded 2-tool limit")
+            if can_use:
+                logger.info(f"[{self.session_id[:8]}] ✓ Tool allowed: {tool_name} - {reason}")
+                return PermissionResultAllow(behavior="allow")
+            else:
+                logger.warning(f"[{self.session_id[:8]}] ✗ Tool denied: {tool_name} - {reason}")
                 return PermissionResultDeny(
                     behavior="deny",
-                    message=f"Maximum 2 tools per response. Already used: {self.tool_count_per_request - 1}",
+                    message=reason,
                     interrupt=False
                 )
 
-            return PermissionResultAllow(behavior="allow")
-
         self.options = ClaudeAgentOptions(
             agents={
-                "master": MASTER_TEACHER_AGENT,
+                "master": MASTER_TEACHER_AGENT,  # Legacy - kept for compatibility
+                "explainer": EXPLAINER_AGENT,
+                "reviewer": CODE_REVIEWER_AGENT,
+                "challenger": CHALLENGER_AGENT,
+                "assessor": ASSESSOR_AGENT,
             },
             mcp_servers={
                 "scrimba": scrimba_tools,
@@ -194,7 +219,8 @@ class UnifiedSession:
                 "mcp__visual__generate_algorithm_flowchart",
                 "mcp__visual__generate_architecture_diagram",
             ],
-            can_use_tool=limit_tools  # Enforce 2-tool limit per request
+            can_use_tool=limit_tools,  # Concept-based permission system
+            setting_sources=["project"]  # Enable memory persistence via .claude/CLAUDE.md
         )
         self.messages = []
 
@@ -213,23 +239,41 @@ class UnifiedSession:
             self.client = None
 
     async def teach(self, instruction):
-        """Teach using persistent client with 2-tool limit and conversation memory"""
+        """Teach using persistent client with intelligent agent routing and concept-based limits"""
         logger.info(f"[{self.session_id[:8]}] Teaching: {instruction}")
 
         try:
             # Ensure client is connected
             await self.connect()
 
-            # Reset tool counter for this request
-            self.tool_count_per_request = 0
+            # Reset concept permission system for this request
+            self.concept_permission.reset()
+            self.current_agent_message = ""
 
-            # Query with strong constraint (can_use_tool enforces hard limit)
-            teaching_prompt = f"""Use the master agent: {instruction}
+            # Route to appropriate specialist agent
+            selected_agent, confidence = self.router.route(instruction, self.messages)
+            routing_msg = self.router.get_routing_explanation(instruction)
 
-CRITICAL CONSTRAINT: You have a maximum of 2 tool calls for this response.
-- Simple topic? Use 1 tool
-- Complex topic? Use 2 tools max
-- Choose wisely - can_use_tool will DENY any 3rd tool attempt
+            logger.info(f"[{self.session_id[:8]}] {routing_msg}")
+
+            # Send routing notification to frontend
+            if self.session_id in message_queues:
+                message_queues[self.session_id].append({
+                    "type": "routing",
+                    "agent": selected_agent,
+                    "confidence": confidence,
+                    "content": routing_msg,
+                    "timestamp": datetime.now().isoformat()
+                })
+
+            # Query with selected specialist agent and concept-based constraints
+            teaching_prompt = f"""Use the {selected_agent} agent: {instruction}
+
+CRITICAL: Follow concept-based teaching protocol:
+1. DECLARE concepts first: "This response teaches N concepts: ..."
+2. Maximum 3 concepts per response (working memory limit)
+3. Use sequential tool chaining (each tool builds on previous)
+4. Maintain consistent teaching patterns
 
 Remember our previous conversation context."""
 
@@ -238,6 +282,13 @@ Remember our previous conversation context."""
             message_count = 0
             async for msg in self.client.receive_response():
                 message_count += 1
+
+                # Capture agent text for concept parsing
+                if isinstance(msg, AssistantMessage):
+                    for block in msg.content:
+                        if isinstance(block, TextBlock) and block.text:
+                            self.current_agent_message += block.text + " "
+
                 formatted_list = self._format_message(msg)
                 if formatted_list:
                     for formatted in formatted_list:
@@ -245,7 +296,8 @@ Remember our previous conversation context."""
                         if self.session_id in message_queues:
                             message_queues[self.session_id].append(formatted)
 
-            logger.info(f"[{self.session_id[:8]}] ✓ Complete! {message_count} messages, {self.tool_count_per_request} tools used")
+            status = self.concept_permission.tracker.get_status()
+            logger.info(f"[{self.session_id[:8]}] ✓ Complete! {message_count} messages, {status['concept_count']} concepts, {status['tools_used']} tools")
 
             # Signal completion
             complete_msg = {"type": "complete", "timestamp": datetime.now().isoformat()}
@@ -327,18 +379,13 @@ def signup():
     result = auth_db.create_user(username, email, password)
 
     if result['success']:
-        # Send verification email
-        email_result = email_service.send_verification_email(
-            result['email'],
-            username,
-            result['verification_token']
-        )
-
-        return jsonify({
-            "success": True,
-            "message": "Account created! Please check your email to verify your account.",
-            "email_sent": email_result.get('success', False)
-        })
+        # Auto-verify and login
+        auth_db.verify_email(result['verification_token'])
+        auth_result = auth_db.authenticate(username, password)
+        token = auth_db.create_session_token(auth_result['user']['id'])
+        response = jsonify({"success": True, "message": "Account created successfully", "user": auth_result['user']})
+        response.set_cookie('session_token', token, httponly=True, samesite='Lax', max_age=30*24*60*60)
+        return response
     else:
         return jsonify({"error": result['error']}), 400
 
@@ -475,7 +522,7 @@ def teach():
 
 @app.route('/api/stream/<session_id>')
 def stream(session_id):
-    """Unified SSE stream for all modes"""
+    """Unified SSE stream with pacing delays for cognitive absorption"""
     if session_id not in message_queues:
         return jsonify({"error": "Session not found"}), 404
 
@@ -483,12 +530,22 @@ def stream(session_id):
         queue = message_queues[session_id]
         sent_count = 0
         heartbeat_count = 0
+        last_msg_type = None
 
         while heartbeat_count < 60:
             if len(queue) > sent_count:
                 for msg in queue[sent_count:]:
+                    current_msg_type = msg.get('type')
+
+                    # Add pacing delay between tool outputs for cognitive absorption
+                    if last_msg_type == 'output' and current_msg_type in ['action', 'teacher']:
+                        import time
+                        time.sleep(2.0)  # 2-second absorption delay after tool output
+
                     yield f"data: {json.dumps(msg)}\n\n"
                     sent_count += 1
+                    last_msg_type = current_msg_type
+
                     # Don't close stream on complete - allow multiple teach requests
                 heartbeat_count = 0
             else:
@@ -501,18 +558,30 @@ def stream(session_id):
 
 
 if __name__ == '__main__':
-    print("=" * 70)
-    print("🎓 MASTER TEACHER - COMPOSITIONAL MULTI-MODAL LEARNING")
-    print("=" * 70)
+    print("=" * 80)
+    print("🎓 SPECIALIZED TEACHING SYSTEM - INTELLIGENT AGENT ROUTING")
+    print("=" * 80)
     print("\n📱 Server: http://localhost:5000")
-    print("\n🎯 Master Agent with 13 Tools:")
-    print("  • 4 Visual Tools    - AI-generated diagrams")
-    print("  • 4 Concept Tools   - Interactive code examples")
-    print("  • 5 Project Tools   - Live coding")
-    print("\n🌟 Compositional Teaching:")
-    print("  Agent automatically uses MULTIPLE tools per lesson")
-    print("  Visual + Code + Simulation + Practice")
-    print("\n📊 1 Master Agent, 13 Tools, 1 Server, Infinite Possibilities")
+    print("\n🤖 SPECIALIZED AGENTS (Auto-routed):")
+    print("  • 📚 EXPLAINER    - Teaches concepts, builds mental models")
+    print("  • 🔍 REVIEWER     - Analyzes code, provides feedback")
+    print("  • 🎯 CHALLENGER   - Creates practice problems")
+    print("  • 📊 ASSESSOR     - Tests understanding, identifies gaps")
+    print("\n🔧 13 TEACHING TOOLS:")
+    print("  • 4 Visual Tools     - Diagrams & visualizations")
+    print("  • 4 Concept Tools    - Examples & simulations")
+    print("  • 5 Project Tools    - Live coding & review")
+    print("\n🧠 COGNITIVE FEATURES:")
+    print("  • Concept-based limits    (max 3 concepts per response)")
+    print("  • Sequential tool chains  (each tool builds on previous)")
+    print("  • Pacing delays           (2s absorption time)")
+    print("  • Persistent memory       (.claude/CLAUDE.md)")
+    print("\n🎯 INTELLIGENT ROUTING:")
+    print("  'Explain X'        → Explainer Agent")
+    print("  'Check my code'    → Reviewer Agent")
+    print("  'Challenge me'     → Challenger Agent")
+    print("  'Test me'          → Assessor Agent")
+    print("\n✨ 4 Specialist Agents, 13 Tools, Infinite Learning")
     print("💡 Ctrl+C to stop\n")
 
     port = int(os.environ.get('PORT', 5000))
