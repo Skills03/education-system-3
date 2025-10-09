@@ -555,8 +555,9 @@ def stream(session_id):
         sent_count = 0
         heartbeat_count = 0
         last_msg_type = None
+        max_idle_heartbeats = 600  # 5 minutes idle timeout (600 * 0.5s = 300s)
 
-        while heartbeat_count < 60:
+        while heartbeat_count < max_idle_heartbeats:
             if len(queue) > sent_count:
                 for msg in queue[sent_count:]:
                     current_msg_type = msg.get('type')
@@ -570,7 +571,12 @@ def stream(session_id):
                     sent_count += 1
                     last_msg_type = current_msg_type
 
-                    # Don't close stream on complete - allow multiple teach requests
+                    # Check if this is a completion message
+                    if current_msg_type == 'complete':
+                        # Reset heartbeat counter to keep stream alive for next request
+                        heartbeat_count = 0
+
+                # Reset heartbeat when we sent messages
                 heartbeat_count = 0
             else:
                 yield f"data: {json.dumps({'type': 'heartbeat'})}\n\n"
