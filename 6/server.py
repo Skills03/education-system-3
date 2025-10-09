@@ -19,6 +19,9 @@ from email_service import EmailService
 # Import concept tracking system
 from concept_tracker import ConceptBasedPermissionSystem
 
+# Import student knowledge tracker
+from student_knowledge import StudentKnowledgeTracker
+
 from claude_agent_sdk import (
     AssistantMessage,
     ClaudeAgentOptions,
@@ -160,6 +163,7 @@ class UnifiedSession:
         self.client = None  # Persistent client for conversation memory
         self.current_agent_message = ""  # Store agent text for concept parsing
         self.router = AgentRouter()  # Intelligent agent routing
+        self.knowledge = StudentKnowledgeTracker()  # Persistent student knowledge
 
         # Set Claude CLI path in environment
         os.environ['PATH'] = f"/root/.nvm/versions/node/v22.20.0/bin:{os.environ.get('PATH', '')}"
@@ -266,14 +270,23 @@ class UnifiedSession:
                     "timestamp": datetime.now().isoformat()
                 })
 
+            # Get student knowledge context
+            knowledge_context = self.knowledge.get_context_summary()
+            logger.info(f"[{self.session_id[:8]}] Knowledge: {knowledge_context}")
+
             # Query with selected specialist agent and concept-based constraints
             teaching_prompt = f"""Use the {selected_agent} agent: {instruction}
+
+STUDENT KNOWLEDGE CONTEXT:
+{knowledge_context}
 
 CRITICAL: Follow concept-based teaching protocol:
 1. DECLARE concepts first: "This response teaches N concepts: ..."
 2. Maximum 3 concepts per response (working memory limit)
 3. Use sequential tool chaining (each tool builds on previous)
 4. Maintain consistent teaching patterns
+5. Don't re-teach mastered concepts unless reviewing
+6. Address weak areas and prerequisites first
 
 Remember our previous conversation context."""
 
@@ -298,6 +311,17 @@ Remember our previous conversation context."""
 
             status = self.concept_permission.tracker.get_status()
             logger.info(f"[{self.session_id[:8]}] ✓ Complete! {message_count} messages, {status['concept_count']} concepts, {status['tools_used']} tools")
+
+            # Record session in knowledge tracker
+            concepts_taught = self.concept_permission.tracker.declared_concepts
+            if concepts_taught:
+                self.knowledge.record_session(
+                    agent_used=selected_agent,
+                    concepts_taught=concepts_taught,
+                    success=True  # TODO: Determine success based on assessment
+                )
+                self.knowledge.save()
+                logger.info(f"[{self.session_id[:8]}] 💾 Knowledge saved: {len(concepts_taught)} concepts")
 
             # Signal completion
             complete_msg = {"type": "complete", "timestamp": datetime.now().isoformat()}

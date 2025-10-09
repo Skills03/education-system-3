@@ -1,168 +1,128 @@
-"""Intelligent Agent Router - Routes queries to specialized teaching agents"""
+"""Intelligent LLM-Based Agent Router
 
-import re
+Uses Claude Haiku to intelligently classify student queries and route to appropriate specialist agent.
+"""
+
+import os
+import json
 import logging
-from typing import Tuple
+import hashlib
+from typing import Tuple, Optional, List, Dict
+from anthropic import Anthropic
 
 logger = logging.getLogger(__name__)
 
 
 class AgentRouter:
-    """Routes student queries to the most appropriate specialist agent"""
+    """LLM-powered intelligent agent routing"""
 
-    # Keyword patterns for each agent type
-    EXPLAINER_PATTERNS = [
-        r'\b(what is|what are|explain|how does|how do|teach me|learn|understand)\b',
-        r'\b(concept|theory|definition|meaning|purpose)\b',
-        r'\b(show me|demonstrate|example of)\b',
-        r'\b(why does|why do|reason|because)\b',
-    ]
+    ROUTING_PROMPT = """You are an intelligent routing system for a teaching platform with 4 specialized agents:
 
-    REVIEWER_PATTERNS = [
-        r'\b(check|review|look at|analyze|fix|debug)\b.*\b(my code|this code|my solution)\b',
-        r'\b(is this correct|am i right|did i do|does this work)\b',
-        r'\b(wrong|error|bug|broken|not working)\b',
-        r'\b(improve|better|optimize|refactor)\b.*\b(code|solution)\b',
-        r'here is my code|here\'s my code|my code is',
-    ]
+**EXPLAINER Agent** - Use when student wants to:
+- Learn a new concept ("explain X", "what is X", "how does X work")
+- Understand theory or fundamentals
+- Build mental models
+- Get examples and demonstrations
 
-    CHALLENGER_PATTERNS = [
-        r'\b(challenge me|give me|create|practice|exercise|problem|quiz)\b',
-        r'\b(try|attempt|solve|work on)\b.*\b(problem|challenge|exercise)\b',
-        r'\b(test myself|practice|train|drill)\b',
-        r'\b(homework|assignment|task)\b',
-    ]
+**REVIEWER Agent** - Use when student:
+- Submits code for review (contains code blocks, functions, classes)
+- Asks "is this correct", "check my code", "review this"
+- Has errors or bugs to fix
+- Wants code improvement suggestions
 
-    ASSESSOR_PATTERNS = [
-        r'\b(test me|quiz me|assess|evaluate|check if i)\b',
-        r'\b(do i understand|am i ready|have i learned)\b',
-        r'\b(verify|validate|confirm)\b.*\b(understanding|knowledge)\b',
-        r'\b(know|mastered|learned)\b.*\b(enough|correctly|well)\b',
-    ]
+**CHALLENGER Agent** - Use when student wants:
+- Practice problems ("challenge me", "give me a problem")
+- Exercises or drills
+- Hands-on coding practice
+- To test their skills by writing code
 
-    # Code submission patterns
-    CODE_SUBMISSION_INDICATORS = [
-        r'```[\w]*\n',  # Code blocks
-        r'\bdef\s+\w+\s*\(',  # Function definitions
-        r'\bclass\s+\w+',  # Class definitions
-        r'\bfunction\s+\w+\s*\(',  # JS functions
-        r'{\s*\n.*:\s*.*\n\s*}',  # Code-like structure
-    ]
+**ASSESSOR Agent** - Use when student wants:
+- To test understanding ("test me", "quiz me", "am I ready")
+- To verify mastery
+- To check if they understood correctly
+- Gap analysis
+
+Analyze this student query and return ONLY a JSON object:
+{
+  "agent": "explainer|reviewer|challenger|assessor",
+  "confidence": 0.0-1.0,
+  "reasoning": "brief explanation"
+}
+
+Query: """
 
     def __init__(self):
-        self.last_agent = None
+        self.client = Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+        self.cache = {}  # Simple in-memory cache
         self.conversation_context = []
+        self.last_agent = None
 
-    def route(self, query: str, conversation_history: list = None) -> Tuple[str, float]:
-        """Route query to appropriate agent
+    def route(self, query: str, conversation_history: Optional[List] = None) -> Tuple[str, float]:
+        """Route query to appropriate agent using LLM intelligence
 
         Returns:
             (agent_name, confidence_score)
         """
-        query_lower = query.lower()
+        # Check cache first (hash the query)
+        cache_key = hashlib.md5(query.lower().encode()).hexdigest()
+        if cache_key in self.cache:
+            logger.info(f"[Router] Cache hit for query")
+            return self.cache[cache_key]
 
-        # Track conversation for context
-        if conversation_history:
-            self.conversation_context = conversation_history[-5:]  # Last 5 exchanges
+        # Build context-aware prompt
+        context_info = ""
+        if self.last_agent:
+            context_info = f"\nContext: Last agent used was {self.last_agent}. "
+            if self.last_agent == "explainer":
+                context_info += "Student likely wants practice now."
+            elif self.last_agent == "challenger":
+                context_info += "Student may be submitting solution or asking for help."
+            elif self.last_agent == "assessor":
+                context_info += "Student may want to learn identified gaps."
 
-        # 1. Check for code submission (highest priority)
-        if self._contains_code(query):
-            logger.info(f"[Router] Code detected → CODE_REVIEWER")
-            return "reviewer", 0.95
+        full_prompt = self.ROUTING_PROMPT + f'"{query}"{context_info}'
 
-        # 2. Check for explicit routing keywords
-        explicit_route = self._check_explicit_routing(query_lower)
-        if explicit_route:
-            return explicit_route
+        try:
+            # Use Haiku for fast, cheap routing
+            response = self.client.messages.create(
+                model="claude-3-5-haiku-20241022",
+                max_tokens=200,
+                temperature=0,  # Deterministic
+                messages=[{
+                    "role": "user",
+                    "content": full_prompt
+                }]
+            )
 
-        # 3. Pattern matching with scoring
-        scores = {
-            "explainer": self._score_patterns(query_lower, self.EXPLAINER_PATTERNS),
-            "reviewer": self._score_patterns(query_lower, self.REVIEWER_PATTERNS),
-            "challenger": self._score_patterns(query_lower, self.CHALLENGER_PATTERNS),
-            "assessor": self._score_patterns(query_lower, self.ASSESSOR_PATTERNS),
-        }
+            # Parse JSON response
+            result_text = response.content[0].text.strip()
 
-        # 4. Context-based boosting
-        if self.last_agent == "explainer":
-            # After explanation, likely wants practice
-            scores["challenger"] *= 1.3
-            scores["assessor"] *= 1.2
-        elif self.last_agent == "challenger":
-            # After challenge, likely submitting code or asking for help
-            scores["reviewer"] *= 1.4
-            scores["explainer"] *= 1.2
-        elif self.last_agent == "assessor":
-            # After assessment, likely wants to learn gaps
-            scores["explainer"] *= 1.5
+            # Extract JSON from response (in case there's extra text)
+            json_start = result_text.find('{')
+            json_end = result_text.rfind('}') + 1
+            if json_start >= 0 and json_end > json_start:
+                result_text = result_text[json_start:json_end]
 
-        # 5. Select highest scoring agent
-        best_agent = max(scores.items(), key=lambda x: x[1])
-        agent_name, confidence = best_agent
+            result = json.loads(result_text)
 
-        # 6. Default to explainer if no clear winner
-        if confidence < 0.3:
-            logger.info(f"[Router] Low confidence ({confidence:.2f}) → Default to EXPLAINER")
-            agent_name = "explainer"
-            confidence = 0.5
+            agent = result.get("agent", "explainer")
+            confidence = float(result.get("confidence", 0.8))
+            reasoning = result.get("reasoning", "")
 
-        # Track for context
-        self.last_agent = agent_name
+            logger.info(f"[Router] Selected {agent.upper()} ({confidence:.0%}) - {reasoning}")
 
-        logger.info(f"[Router] Selected: {agent_name.upper()} (confidence: {confidence:.2f})")
-        logger.debug(f"[Router] All scores: {scores}")
+            # Update context
+            self.last_agent = agent
 
-        return agent_name, confidence
+            # Cache the result
+            self.cache[cache_key] = (agent, confidence)
 
-    def _contains_code(self, text: str) -> bool:
-        """Detect if query contains code"""
-        for pattern in self.CODE_SUBMISSION_INDICATORS:
-            if re.search(pattern, text):
-                return True
-        return False
+            return agent, confidence
 
-    def _check_explicit_routing(self, query: str) -> Tuple[str, float] | None:
-        """Check for explicit agent requests"""
-
-        # Explicit explainer requests
-        if any(phrase in query for phrase in ["explain to me", "teach me", "what is", "how does"]):
-            if "then quiz me" in query or "then test me" in query:
-                return "assessor", 0.9  # Wants assessment after
-            return "explainer", 0.9
-
-        # Explicit review requests
-        if any(phrase in query for phrase in ["review my code", "check my code", "is my code"]):
-            return "reviewer", 0.95
-
-        # Explicit challenge requests
-        if any(phrase in query for phrase in ["challenge me", "give me a problem", "practice problem"]):
-            return "challenger", 0.95
-
-        # Explicit assessment requests
-        if any(phrase in query for phrase in ["test me", "quiz me", "am i ready"]):
-            return "assessor", 0.95
-
-        return None
-
-    def _score_patterns(self, text: str, patterns: list) -> float:
-        """Score text against pattern list"""
-        score = 0.0
-        matches = 0
-
-        for pattern in patterns:
-            if re.search(pattern, text, re.IGNORECASE):
-                matches += 1
-                score += 1.0
-
-        # Normalize by number of patterns
-        if patterns:
-            score = score / len(patterns)
-
-        # Boost if multiple patterns match
-        if matches > 1:
-            score *= (1 + matches * 0.2)
-
-        return min(score, 1.0)  # Cap at 1.0
+        except Exception as e:
+            logger.error(f"[Router] LLM routing failed: {e}, defaulting to explainer")
+            # Fallback to explainer on error
+            return "explainer", 0.5
 
     def get_routing_explanation(self, query: str) -> str:
         """Get human-readable routing explanation"""
@@ -170,74 +130,106 @@ class AgentRouter:
 
         explanations = {
             "explainer": "🎓 Routing to EXPLAINER - You're asking to learn a concept",
-            "reviewer": "🔍 Routing to CODE REVIEWER - You submitted code for review",
-            "challenger": "🎯 Routing to CHALLENGER - You want a practice problem",
-            "assessor": "📊 Routing to ASSESSOR - You want to test your understanding",
+            "reviewer": "🔍 Routing to CODE REVIEWER - Analyzing your code",
+            "challenger": "🎯 Routing to CHALLENGER - Creating practice problem",
+            "assessor": "📊 Routing to ASSESSOR - Testing your understanding",
         }
 
         base_msg = explanations.get(agent, f"Routing to {agent}")
         return f"{base_msg} (confidence: {confidence:.0%})"
 
-
-# ============================================================================
-# CONTEXTUAL ROUTING STRATEGIES
-# ============================================================================
-
-class ContextualRouter(AgentRouter):
-    """Extended router with learning path awareness"""
-
-    def __init__(self):
-        super().__init__()
-        self.student_state = "exploring"  # exploring, practicing, mastering
-
-    def route_with_learning_state(self, query: str, student_level: str = "beginner") -> Tuple[str, float]:
-        """Route based on learning state and student level"""
-
-        base_agent, confidence = self.route(query)
-
-        # Beginner students - favor explainer and heavy scaffolding
-        if student_level == "beginner":
-            if base_agent == "challenger":
-                # First explain, then challenge
-                logger.info("[Router] Beginner detected - explaining before challenging")
-                return "explainer", 0.8
-            elif base_agent == "assessor":
-                # Too early to assess, build confidence first
-                logger.info("[Router] Beginner detected - building foundation before assessment")
-                return "explainer", 0.7
-
-        # Advanced students - favor challenges and less explanation
-        elif student_level == "advanced":
-            if base_agent == "explainer" and confidence < 0.7:
-                # Skip explanation, go straight to challenge
-                logger.info("[Router] Advanced student - challenging instead of explaining")
-                return "challenger", 0.8
-
-        return base_agent, confidence
-
     def suggest_next_agent(self, current_agent: str, success: bool) -> str:
         """Suggest next agent based on current interaction outcome"""
 
+        # Optimal learning flow paths
         flow_map = {
             "explainer": {
                 True: "challenger",  # Understood → Practice
-                False: "explainer",  # Confused → Re-explain
+                False: "explainer",  # Confused → Re-explain differently
             },
             "challenger": {
-                True: "assessor",    # Solved → Test understanding
-                False: "reviewer",   # Stuck → Review and help
+                True: "assessor",    # Solved → Test deeper understanding
+                False: "reviewer",   # Stuck → Get help with code
             },
             "reviewer": {
-                True: "challenger",  # Fixed → Try again
-                False: "explainer",  # Still confused → Back to basics
+                True: "challenger",  # Fixed → Try another challenge
+                False: "explainer",  # Still confused → Back to fundamentals
             },
             "assessor": {
                 True: "challenger",  # Passed → Harder challenges
-                False: "explainer",  # Failed → Fill gaps
+                False: "explainer",  # Failed → Fill knowledge gaps
             }
         }
 
         next_agent = flow_map.get(current_agent, {}).get(success, "explainer")
-        logger.info(f"[Router] Suggested flow: {current_agent} ({'✓' if success else '✗'}) → {next_agent}")
+        logger.info(f"[Router] Learning path: {current_agent} ({'✓' if success else '✗'}) → {next_agent}")
 
         return next_agent
+
+    def route_with_context(
+        self,
+        query: str,
+        student_level: str = "beginner",
+        recent_topics: List[str] = None
+    ) -> Tuple[str, float]:
+        """Advanced routing with student profile context"""
+
+        base_agent, confidence = self.route(query)
+
+        # Beginner students - prioritize explanation and support
+        if student_level == "beginner":
+            if base_agent == "assessor" and confidence < 0.9:
+                logger.info("[Router] Beginner detected - building confidence before assessment")
+                return "explainer", 0.7
+            elif base_agent == "challenger" and confidence < 0.8:
+                logger.info("[Router] Beginner detected - explaining before challenging")
+                return "explainer", 0.7
+
+        # Advanced students - skip redundant explanations
+        elif student_level == "advanced":
+            if base_agent == "explainer" and confidence < 0.8:
+                logger.info("[Router] Advanced student - moving to practice")
+                return "challenger", 0.7
+
+        return base_agent, confidence
+
+
+class ContextualRouter(AgentRouter):
+    """Extended router with deep conversation awareness"""
+
+    def __init__(self):
+        super().__init__()
+        self.query_history = []
+        self.agent_history = []
+
+    def route_with_history(self, query: str, max_history: int = 5) -> Tuple[str, float]:
+        """Route considering conversation flow"""
+
+        # Track query
+        self.query_history.append(query)
+
+        # Detect patterns in conversation
+        if len(self.agent_history) >= 2:
+            last_two = self.agent_history[-2:]
+
+            # Student stuck in explain → explain loop (not learning)
+            if last_two == ["explainer", "explainer"]:
+                logger.info("[Router] Stuck in explanation loop - pushing to practice")
+                agent = "challenger"
+                confidence = 0.75
+                self.agent_history.append(agent)
+                return agent, confidence
+
+            # Student bouncing between challenger and explainer (struggling)
+            if set(last_two) == {"challenger", "explainer"}:
+                logger.info("[Router] Student struggling - routing to reviewer for help")
+                agent = "reviewer"
+                confidence = 0.8
+                self.agent_history.append(agent)
+                return agent, confidence
+
+        # Standard routing
+        agent, confidence = self.route(query)
+        self.agent_history.append(agent)
+
+        return agent, confidence
