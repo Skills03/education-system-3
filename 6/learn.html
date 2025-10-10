@@ -419,18 +419,22 @@
             });
             sessionId = tempSessionId; // Re-enable
 
-            // Create new server session for this ID
+            // Check if server has this session, create only if needed
             try {
-                const response = await fetch(`${API_URL}/api/session/${sessionId}/history`);
-                if (!response.ok) {
-                    // Server doesn't have this session, create new one
-                    const newResponse = await fetch(`${API_URL}/api/session/start`, {
+                const checkResponse = await fetch(`${API_URL}/api/session/${sessionId}/history`);
+
+                if (!checkResponse.ok) {
+                    // Session doesn't exist, create new one
+                    const createResponse = await fetch(`${API_URL}/api/session/start`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' }
                     });
+                    const newData = await createResponse.json();
+                    sessionId = newData.session_id; // Use new session ID
                 }
+                // Else: server has the session, reuse same sessionId
             } catch (error) {
-                console.error('Note: Starting with local history only');
+                console.error('Error checking session:', error);
             }
 
             // Reconnect stream
@@ -527,7 +531,18 @@
             if (msg.type === 'complete') {
                 updateStatus('Lesson complete! Ask another question 💡', 'ready');
                 sendBtn.disabled = false;
+                return; // Don't addMessage for complete
+            }
+
+            if (msg.type === 'error') {
+                updateStatus('Error occurred - Ready to retry 💡', 'error');
+                sendBtn.disabled = false;
+                addMessage(msg.type, msg.content);
                 return;
+            }
+
+            if (msg.type === 'routing') {
+                return; // Skip routing messages in UI
             }
 
             addMessage(msg.type, msg.content);
