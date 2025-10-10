@@ -143,7 +143,7 @@ class UnifiedSession:
 
             if can_use:
                 logger.info(f"[{self.session_id[:8]}] ✓ Tool allowed: {tool_name} - {reason}")
-                return PermissionResultAllow(behavior="allow")
+                return PermissionResultAllow(behavior="allow", updatedInput=input_data)
             else:
                 logger.warning(f"[{self.session_id[:8]}] ✗ Tool denied: {tool_name} - {reason}")
                 return PermissionResultDeny(
