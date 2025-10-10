@@ -289,6 +289,10 @@ Remember:
             if self.session_id in message_queues:
                 message_queues[self.session_id].put(complete_msg)
 
+            # Disconnect client to ensure clean state for next message
+            # (Each asyncio.run() creates new loop, client must be recreated)
+            await self.disconnect()
+
         except Exception as e:
             logger.error(f"[{self.session_id[:8]}] ❌ Error: {e}")
             logger.error(traceback.format_exc())
@@ -299,6 +303,9 @@ Remember:
             }
             if self.session_id in message_queues:
                 message_queues[self.session_id].put(error_msg)
+
+            # Disconnect on error too
+            await self.disconnect()
 
     def _format_message(self, msg):
         """Format message for frontend"""
@@ -388,12 +395,19 @@ def teach():
     import threading
     def run():
         try:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            loop.run_until_complete(session.teach(message))
-            loop.close()
+            # Use asyncio.run() - SDK-compliant loop management
+            asyncio.run(session.teach(message))
         except Exception as e:
-            logger.error(f"Error in teach thread: {e}")
+            logger.error(f"❌ Error in teach thread: {e}")
+            import traceback
+            traceback.print_exc()  # Full stack trace to terminal
+            # Send error to frontend
+            if session_id in message_queues:
+                message_queues[session_id].put({
+                    "type": "error",
+                    "content": f"Error: {str(e)}",
+                    "timestamp": datetime.now().isoformat()
+                })
 
     threading.Thread(target=run, daemon=True).start()
     return jsonify({"status": "processing"})
