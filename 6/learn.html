@@ -363,7 +363,7 @@
     </div><!-- Close container -->
 
     <script>
-        const API_URL = 'http://localhost:5000';
+        const API_URL = window.location.origin;
         let sessionId = null;
         let eventSource = null;
         let sessions = JSON.parse(localStorage.getItem('learningSessions') || '[]');
@@ -400,9 +400,40 @@
             }
         }
 
-        function loadSession(id) {
-            // In this version, just start new stream for existing session
+        async function loadSession(id) {
             sessionId = id;
+            messages.innerHTML = '';
+            updateStatus('Loading session...', 'processing');
+
+            // Load messages from localStorage
+            const key = `session_${id}_messages`;
+            const savedMessages = JSON.parse(localStorage.getItem(key) || '[]');
+
+            // Restore messages from localStorage (don't save again)
+            const tempSessionId = sessionId;
+            sessionId = null; // Temporarily disable saving
+            savedMessages.forEach(msg => {
+                if (msg.type !== 'complete' && msg.type !== 'routing') {
+                    addMessage(msg.type, msg.content);
+                }
+            });
+            sessionId = tempSessionId; // Re-enable
+
+            // Create new server session for this ID
+            try {
+                const response = await fetch(`${API_URL}/api/session/${sessionId}/history`);
+                if (!response.ok) {
+                    // Server doesn't have this session, create new one
+                    const newResponse = await fetch(`${API_URL}/api/session/start`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                }
+            } catch (error) {
+                console.error('Note: Starting with local history only');
+            }
+
+            // Reconnect stream
             if (eventSource) eventSource.close();
             eventSource = new EventSource(`${API_URL}/api/stream/${sessionId}`);
             eventSource.onmessage = (event) => {
@@ -411,9 +442,9 @@
             };
             eventSource.onerror = (error) => {
                 console.error('SSE Error:', error);
-                updateStatus('Connection error', 'error');
             };
-            updateStatus('Loaded session - Ready to continue! 🎓', 'ready');
+
+            updateStatus(`Loaded ${savedMessages.length} messages - Ready to continue! 🎓`, 'ready');
             messageInput.disabled = false;
             sendBtn.disabled = false;
             renderSessions();
@@ -523,6 +554,14 @@
 
             messages.appendChild(msgDiv);
             messages.scrollTop = messages.scrollHeight;
+
+            // Save message to localStorage
+            if (sessionId) {
+                const key = `session_${sessionId}_messages`;
+                const savedMessages = JSON.parse(localStorage.getItem(key) || '[]');
+                savedMessages.push({ type, content, timestamp: Date.now() });
+                localStorage.setItem(key, JSON.stringify(savedMessages));
+            }
         }
 
         function updateStatus(text, type) {

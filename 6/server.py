@@ -128,9 +128,6 @@ class UnifiedSession:
         self.router = AgentRouter()  # Intelligent agent routing
         self.knowledge = StudentKnowledgeTracker(session_id=session_id)  # Session-scoped student knowledge
 
-        # Set Claude CLI path in environment
-        os.environ['PATH'] = f"/root/.nvm/versions/node/v22.20.0/bin:{os.environ.get('PATH', '')}"
-
         # Concept-based permission system
         async def limit_tools(
             tool_name: str,
@@ -400,6 +397,16 @@ def teach():
 
     threading.Thread(target=run, daemon=True).start()
     return jsonify({"status": "processing"})
+
+
+@app.route('/api/session/<session_id>/history', methods=['GET'])
+def get_session_history(session_id):
+    """Get message history for a session"""
+    if session_id not in sessions:
+        return jsonify({"error": "Session not found"}), 404
+
+    session = sessions[session_id]
+    return jsonify({"messages": session.messages})
 
 
 @app.route('/api/stream/<session_id>')
