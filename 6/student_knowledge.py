@@ -24,7 +24,7 @@ class ConceptMastery:
 class StudentKnowledgeTracker:
     """Manages persistent student knowledge in session-scoped files"""
 
-    def __init__(self, session_id: str = None, base_dir: str = "/home/mahadev/Desktop/dev/education/6/.claude"):
+    def __init__(self, session_id: str = None, base_dir: str = "./.claude"):
         """Initialize tracker with session-specific knowledge file
 
         Args:
