@@ -92,18 +92,29 @@
         }
 
         .new-session-btn {
-            margin: 10px;
-            padding: 12px;
-            background: #667eea;
-            color: white;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            background: white;
+            color: #667eea;
             border: none;
-            border-radius: 8px;
+            border-radius: 50%;
             cursor: pointer;
-            font-weight: 600;
+            font-size: 24px;
+            font-weight: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 10;
         }
 
         .new-session-btn:hover {
-            background: #5568d3;
+            background: #f3f4f6;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transform: scale(1.05);
         }
 
         .main-content {
@@ -302,6 +313,8 @@
 </head>
 <body>
     <div class="container">
+        <button class="new-session-btn" id="newSessionBtn" title="New Session">+</button>
+
         <!-- Sidebar for session history -->
         <div class="sidebar">
             <div class="sidebar-header">
@@ -309,7 +322,6 @@
                 <p style="font-size: 0.85em; opacity: 0.9; margin-top: 5px;">Your conversation history</p>
             </div>
             <div class="sessions-list" id="sessionsList"></div>
-            <button class="new-session-btn" id="newSessionBtn">+ New Session</button>
         </div>
 
         <!-- Main content area -->
@@ -319,7 +331,7 @@
                 <p>Compositional Multi-Modal Learning • Ask anything, get complete lessons</p>
             </div>
 
-            <div class="status" id="status">Ready! Click "New Session" to begin 🎓</div>
+            <div class="status" id="status">Ready! Just start typing to learn 🎓</div>
 
             <div class="messages" id="messages">
             <div class="message teacher">
@@ -354,9 +366,8 @@
                     type="text"
                     id="messageInput"
                     placeholder="What do you want to learn? (e.g., 'Teach me linked lists')"
-                    disabled
                 >
-                <button class="btn btn-primary" id="sendBtn" disabled>Send</button>
+                <button class="btn btn-primary" id="sendBtn">Send</button>
             </div>
         </div>
         </div><!-- Close main-content -->
@@ -495,11 +506,48 @@
 
         async function sendMessage() {
             const message = messageInput.value.trim();
-            if (!message || !sessionId) return;
+            if (!message) return;
 
             // Prevent double-sending
             if (sendBtn.disabled) return;
             sendBtn.disabled = true;
+
+            // Auto-create session if none exists
+            if (!sessionId) {
+                try {
+                    updateStatus('Creating new session...', 'processing');
+                    const response = await fetch(`${API_URL}/api/session/start`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
+                    const data = await response.json();
+                    sessionId = data.session_id;
+
+                    // Auto-name session from first message
+                    const sessionName = message.substring(0, 30) + (message.length > 30 ? '...' : '');
+                    saveSession(sessionId, sessionName);
+
+                    // Setup SSE stream
+                    if (eventSource) eventSource.close();
+                    eventSource = new EventSource(`${API_URL}/api/stream/${sessionId}`);
+
+                    eventSource.onmessage = (event) => {
+                        const msg = JSON.parse(event.data);
+                        handleMessage(msg);
+                    };
+
+                    eventSource.onerror = (error) => {
+                        console.error('SSE Error:', error);
+                        updateStatus('Connection error', 'error');
+                    };
+                } catch (error) {
+                    updateStatus('Error creating session', 'error');
+                    console.error(error);
+                    sendBtn.disabled = false;
+                    return;
+                }
+            }
 
             addMessage('student', message);
             messageInput.value = '';
