@@ -364,6 +364,27 @@ def learn():
     return send_file('learn.html')
 
 
+@app.route('/manifest.json')
+def manifest():
+    """Serve PWA manifest"""
+    from flask import send_file
+    return send_file('manifest.json', mimetype='application/json')
+
+
+@app.route('/service-worker.js')
+def service_worker():
+    """Serve service worker"""
+    from flask import send_file
+    return send_file('service-worker.js', mimetype='application/javascript')
+
+
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    """Serve static files (icons, etc.)"""
+    from flask import send_from_directory
+    return send_from_directory('static', filename)
+
+
 @app.route('/api/session/start', methods=['POST'])
 def start_session():
     """Create new teaching session"""
