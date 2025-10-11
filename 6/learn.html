@@ -146,6 +146,8 @@
             text-align: center;
             font-weight: 500;
             transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
         }
 
         .status.ready { background: #d1fae5; color: #065f46; }
@@ -227,6 +229,47 @@
             color: #065f46;
             text-align: right;
             font-weight: 600;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: #991b1b;
+            font-weight: 500;
+        }
+
+        .message.typing {
+            background: #f3f4f6;
+            border-left: 4px solid #9ca3af;
+            padding: 15px 20px;
+            border-radius: 12px;
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .typing-dots {
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        .typing-dots span {
+            animation: blink 1.4s infinite;
+            opacity: 0.3;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes blink {
+            0%, 60%, 100% { opacity: 0.3; }
+            30% { opacity: 1; }
         }
 
         .input-area {
@@ -385,6 +428,7 @@
         const sendBtn = document.getElementById('sendBtn');
         const newSessionBtn = document.getElementById('newSessionBtn');
         const sessionsList = document.getElementById('sessionsList');
+        let typingIndicator = null;
 
         // Load sessions on startup
         function renderSessions() {
@@ -457,6 +501,9 @@
             };
             eventSource.onerror = (error) => {
                 console.error('SSE Error:', error);
+                updateStatus('Connection lost. Please refresh the page or try again.', 'error');
+                addMessage('error', '⚠️ Lost connection to the teacher. Your messages are saved. Please refresh the page to continue.');
+                sendBtn.disabled = false;
             };
 
             updateStatus(`Loaded ${savedMessages.length} messages - Ready to continue! 🎓`, 'ready');
@@ -490,7 +537,9 @@
 
                 eventSource.onerror = (error) => {
                     console.error('SSE Error:', error);
-                    updateStatus('Connection error', 'error');
+                    updateStatus('Connection error. Please try again.', 'error');
+                    addMessage('error', '⚠️ Failed to connect to the teacher. Please check your connection and try again.');
+                    sendBtn.disabled = false;
                 };
 
                 messages.innerHTML = ''; // Clear messages for new session
@@ -539,11 +588,14 @@
 
                     eventSource.onerror = (error) => {
                         console.error('SSE Error:', error);
-                        updateStatus('Connection error', 'error');
+                        updateStatus('Connection error. Please try again.', 'error');
+                        addMessage('error', '⚠️ Failed to connect to the teacher. Please check your connection and try again.');
+                        sendBtn.disabled = false;
                     };
                 } catch (error) {
-                    updateStatus('Error creating session', 'error');
+                    updateStatus('Failed to start session. Please try again.', 'error');
                     console.error(error);
+                    addMessage('error', '⚠️ Could not start a new learning session. Please check your connection and try again.');
                     sendBtn.disabled = false;
                     return;
                 }
@@ -560,10 +612,13 @@
                     body: JSON.stringify({ session_id: sessionId, message })
                 });
 
-                if (!response.ok) throw new Error('Failed to send');
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
             } catch (error) {
-                updateStatus('Error sending message', 'error');
+                updateStatus('Failed to get response. Please try again.', 'error');
                 console.error(error);
+                addMessage('error', '⚠️ Could not get a response from the teacher. Please try sending your message again.');
                 sendBtn.disabled = false; // Re-enable on error
             }
         }
@@ -577,15 +632,17 @@
             if (msg.type === 'heartbeat') return;
 
             if (msg.type === 'complete') {
+                hideTypingIndicator();
                 updateStatus('Lesson complete! Ask another question 💡', 'ready');
                 sendBtn.disabled = false;
                 return; // Don't addMessage for complete
             }
 
             if (msg.type === 'error') {
-                updateStatus('Error occurred - Ready to retry 💡', 'error');
+                hideTypingIndicator();
+                updateStatus('Error occurred - Ready to try again 💡', 'error');
                 sendBtn.disabled = false;
-                addMessage(msg.type, msg.content);
+                addMessage('error', `⚠️ ${msg.content || 'An error occurred while processing your request. Please try again.'}`);
                 return;
             }
 
@@ -593,6 +650,8 @@
                 return; // Skip routing messages in UI
             }
 
+            // Hide typing indicator on first real message
+            hideTypingIndicator();
             addMessage(msg.type, msg.content);
         }
 
@@ -613,6 +672,8 @@
                 msgDiv.innerHTML = rendered;
             } else if (type === 'cost') {
                 msgDiv.innerHTML = `💰 Lesson Cost: ${content}`;
+            } else if (type === 'error') {
+                msgDiv.innerHTML = content;
             }
 
             messages.appendChild(msgDiv);
@@ -627,9 +688,32 @@
             }
         }
 
+        function showTypingIndicator() {
+            if (typingIndicator) return;
+
+            typingIndicator = document.createElement('div');
+            typingIndicator.className = 'message typing';
+            typingIndicator.innerHTML = '🎓 Master Teacher is typing<span class="typing-dots"><span>.</span><span>.</span><span>.</span></span>';
+            messages.appendChild(typingIndicator);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            if (typingIndicator) {
+                typingIndicator.remove();
+                typingIndicator = null;
+            }
+        }
+
         function updateStatus(text, type) {
             status.textContent = text;
             status.className = `status ${type}`;
+
+            if (type === 'processing') {
+                showTypingIndicator();
+            } else {
+                hideTypingIndicator();
+            }
         }
 
         // Initialize sessions list on page load
