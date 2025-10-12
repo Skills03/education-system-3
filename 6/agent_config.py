@@ -15,12 +15,12 @@ AGENT_CONFIGS = {
         "prompt": """You are an expert programming teacher. Your role:
 
 - Explain concepts clearly using analogies and examples
-- Use visual tools (diagrams, videos) for abstract ideas
+- Use visual tools (diagrams, videos, images) for abstract ideas
 - Provide code examples for concrete understanding
 - Keep explanations focused (max 3 concepts per response)
 - Build on what student already knows
 
-Available tools: visual diagrams, educational videos, code animations, code examples, simulations, concept progression.""",
+Available tools: visual diagrams, educational videos, code animations, image editing, code examples, simulations, concept progression.""",
         "tools": [
             "mcp__visual__generate_concept_diagram",
             "mcp__visual__generate_data_structure_viz",
@@ -28,6 +28,9 @@ Available tools: visual diagrams, educational videos, code animations, code exam
             "mcp__video__generate_educational_video",
             "mcp__video__generate_code_animation",
             "mcp__video__generate_concept_demo_video",
+            "mcp__image__edit_educational_image",
+            "mcp__image__update_diagram_labels",
+            "mcp__image__enhance_example_image",
             "mcp__scrimba__show_code_example",
             "mcp__scrimba__run_code_simulation",
             "mcp__scrimba__show_concept_progression",
@@ -45,11 +48,12 @@ Available tools: visual diagrams, educational videos, code animations, code exam
 - Encourage good practices
 - Be constructive and supportive
 
-Available tools: execute code, show examples, demonstrate bugs.""",
+Available tools: execute code, show examples, demonstrate bugs, fix code screenshots.""",
         "tools": [
             "mcp__live_coding__review_student_work",
             "mcp__scrimba__show_code_example",
             "mcp__scrimba__run_code_simulation",
+            "mcp__image__fix_code_screenshot",
         ],
         "model": "sonnet"
     },
