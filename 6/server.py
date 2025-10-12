@@ -62,6 +62,8 @@ from tools.video_tools import (
     generate_concept_demo_video,
 )
 from tools.image_tools import (
+    generate_image,
+    generate_educational_illustration,
     edit_educational_image,
     fix_code_screenshot,
     update_diagram_labels,
@@ -132,6 +134,8 @@ image_tools = create_sdk_mcp_server(
     name="image_tools",
     version="1.0.0",
     tools=[
+        generate_image,
+        generate_educational_illustration,
         edit_educational_image,
         fix_code_screenshot,
         update_diagram_labels,
@@ -194,7 +198,10 @@ class UnifiedSession:
 **CHALLENGER MODE**: Create practice problems matching skill level
 **ASSESSOR MODE**: Test understanding and identify knowledge gaps
 
-Tools available: visual diagrams, educational videos, code animations, image editing, code examples, simulations, challenges, code review.
+Tools available: visual diagrams, educational videos, code animations, image generation, image editing, code examples, simulations, challenges, code review.
+
+IMPORTANT: When asked to generate images (like "generate image of a cat"), use the generate_image tool directly. Do not refuse or suggest programming alternatives unless the request is specifically about learning to code images.
+
 Max 2 tools per response. Max 3 concepts per response.""",
             tools=get_all_tools(),
             model="sonnet"
@@ -529,7 +536,7 @@ if __name__ == '__main__':
     print(f"\n🔧 TEACHING TOOLS ({tool_count} total):")
     print("  • Visual Tools    - Diagrams & visualizations")
     print("  • Video Tools     - Educational videos & animations")
-    print("  • Image Tools     - AI image editing & fixes")
+    print("  • Image Tools     - AI image generation & editing")
     print("  • Concept Tools   - Examples & simulations")
     print("  • Project Tools   - Live coding & review")
 

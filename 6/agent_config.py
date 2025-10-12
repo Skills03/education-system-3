@@ -20,7 +20,7 @@ AGENT_CONFIGS = {
 - Keep explanations focused (max 3 concepts per response)
 - Build on what student already knows
 
-Available tools: visual diagrams, educational videos, code animations, image editing, code examples, simulations, concept progression.""",
+Available tools: visual diagrams, educational videos, code animations, image generation, image editing, code examples, simulations, concept progression.""",
         "tools": [
             "mcp__visual__generate_concept_diagram",
             "mcp__visual__generate_data_structure_viz",
@@ -28,6 +28,8 @@ Available tools: visual diagrams, educational videos, code animations, image edi
             "mcp__video__generate_educational_video",
             "mcp__video__generate_code_animation",
             "mcp__video__generate_concept_demo_video",
+            "mcp__image__generate_image",
+            "mcp__image__generate_educational_illustration",
             "mcp__image__edit_educational_image",
             "mcp__image__update_diagram_labels",
             "mcp__image__enhance_example_image",
