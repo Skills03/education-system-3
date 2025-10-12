@@ -200,7 +200,11 @@ class UnifiedSession:
 
 Tools available: visual diagrams, educational videos, code animations, image generation, image editing, code examples, simulations, challenges, code review.
 
-IMPORTANT: When asked to generate images (like "generate image of a cat"), use the generate_image tool directly. Do not refuse or suggest programming alternatives unless the request is specifically about learning to code images.
+IMPORTANT IMAGE HANDLING:
+- When asked to generate images: use generate_image tool directly
+- When given image URLs (https://...): use edit_educational_image tool directly with the URL
+- Image tools accept URLs directly - do NOT try to fetch/download/read images first
+- Example: User gives "https://example.com/cat.jpg" → call edit_educational_image with image_url="https://example.com/cat.jpg"
 
 Max 2 tools per response. Max 3 concepts per response.""",
             tools=get_all_tools(),
