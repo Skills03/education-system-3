@@ -1,4 +1,18 @@
-"""Visual Learning Tools - Generate AI diagrams"""
+"""Visual Learning Tools - Generate AI diagrams
+
+⚠️ DEPRECATED: These tools create abstract diagrams without human context.
+⚠️ USE INSTEAD: story_teaching_tools.py -> generate_teaching_scene (person + object + action)
+
+These tools are kept for BACKWARD COMPATIBILITY ONLY.
+For teaching, ALWAYS use story-based tools with real-world analogies and human-centered visuals.
+
+Why deprecated:
+- generate_concept_diagram: Creates abstract boxes/arrows (not memorable)
+- generate_data_structure_viz: Technical diagrams without human interaction
+- generate_algorithm_flowchart: Flowcharts without story context
+
+Use generate_teaching_scene instead for human-centered learning!
+"""
 
 import logging
 import traceback

@@ -1,4 +1,21 @@
-"""Concept Teaching Tools - Show examples and simulations"""
+"""Concept Teaching Tools - Show examples and simulations
+
+⚠️ DEPRECATED: These tools start with CODE, not ANALOGIES.
+⚠️ USE INSTEAD: story_teaching_tools.py (analogy → walkthrough → visual)
+
+These tools are kept for BACKWARD COMPATIBILITY ONLY.
+For teaching, ALWAYS use story-based teaching sequence:
+1. explain_with_analogy (real-world metaphor FIRST)
+2. walk_through_concept (progressive exploration)
+3. generate_teaching_scene (person + object + action)
+
+Why deprecated:
+- show_code_example: Shows Python syntax directly (no analogy foundation)
+- run_code_simulation: Executes code (not concept exploration)
+- create_interactive_challenge: Useful for assessment, not initial teaching
+
+Teaching MUST start with analogies, not code!
+"""
 
 from claude_agent_sdk import tool
 

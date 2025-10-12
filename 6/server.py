@@ -67,6 +67,11 @@ from tools.image_tools import (
     update_diagram_labels,
     enhance_example_image,
 )
+from tools.story_teaching_tools import (
+    explain_with_analogy,
+    walk_through_concept,
+    generate_teaching_scene,
+)
 
 # Import agent configuration (dynamic, SDK-native)
 from agent_config import create_agent_definitions, get_enhanced_prompt, get_all_tools
@@ -141,6 +146,16 @@ image_tools = create_sdk_mcp_server(
     ],
 )
 
+story_teaching = create_sdk_mcp_server(
+    name="story_teaching",
+    version="1.0.0",
+    tools=[
+        explain_with_analogy,
+        walk_through_concept,
+        generate_teaching_scene,
+    ],
+)
+
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-' + os.urandom(24).hex())
@@ -162,12 +177,20 @@ class UnifiedSession:
         self.router = AgentRouter()  # Intelligent agent routing
         self.knowledge = StudentKnowledgeTracker(session_id=session_id)  # Session-scoped student knowledge
 
-        # Concept-based permission system
+        # Concept-based permission system (allows 3 tools)
         async def limit_tools(
             tool_name: str,
             input_data: dict[str, any],
             context: ToolPermissionContext
         ):
+            # HARD LIMIT: 3 tools (2 text + 1 visual)
+            HARD_TOOL_LIMIT = 3
+            tool_count = len(self.concept_permission.tracker.tools_used)
+
+            if tool_count >= HARD_TOOL_LIMIT:
+                logger.warning(f"[{self.session_id[:8]}] ✗ DENIED - {HARD_TOOL_LIMIT} tools already used")
+                return {"behavior": "deny", "message": f"Maximum {HARD_TOOL_LIMIT} tools per response.", "interrupt": False}
+
             # Check concept limit and sequencing
             can_use, reason = self.concept_permission.can_use_tool(
                 tool_name,
@@ -176,7 +199,7 @@ class UnifiedSession:
             )
 
             if can_use:
-                logger.info(f"[{self.session_id[:8]}] ✓ Tool allowed: {tool_name} - {reason}")
+                logger.info(f"[{self.session_id[:8]}] ✓ Tool allowed ({tool_count+1}/{HARD_TOOL_LIMIT}): {tool_name}")
                 return {"behavior": "allow", "updatedInput": input_data}
             else:
                 logger.warning(f"[{self.session_id[:8]}] ✗ Tool denied: {tool_name} - {reason}")
@@ -184,30 +207,124 @@ class UnifiedSession:
 
         # Single adaptive agent with role-switching (SDK doesn't support multi-agent routing)
         master_agent = AgentDefinition(
-            description="Adaptive programming teacher that switches roles based on student needs",
-            prompt="""You are an adaptive programming teacher. Switch roles based on the request:
+            description="Story-based programming teacher using analogies and human-centered visuals",
+            prompt="""You are a story-based programming teacher. You teach through STORIES, not abstract code.
 
-**EXPLAINER MODE**: Explain concepts clearly with examples and visuals
-**REVIEWER MODE**: Analyze code and provide constructive feedback
-**CHALLENGER MODE**: Create practice problems matching skill level
-**ASSESSOR MODE**: Test understanding and identify knowledge gaps
+## YOUR ONLY TEACHING METHOD: STORY TEACHING SEQUENCE
 
-Tools available: visual diagrams, educational videos, code animations, image generation, image editing, code examples, simulations, challenges, code review.
+EVERY time you teach a concept, you MUST use these 3 tools in EXACT order:
 
-IMPORTANT IMAGE HANDLING:
-- When asked to generate images: use generate_image tool directly
-- When given image URLs (https://...): use edit_educational_image tool directly with the URL
-- Image tools accept URLs directly - do NOT try to fetch/download/read images first
-- Example: User gives "https://example.com/cat.jpg" → call edit_educational_image with image_url="https://example.com/cat.jpg"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 1 - REAL WORLD ANALOGY (text-based)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TOOL: explain_with_analogy
+Purpose: Explain concept using concrete real-world metaphor/analogy
 
-IMPORTANT VIDEO TOOL POLICY:
-- Video generation takes 3-5 minutes and is expensive
-- ONLY use video tools if user EXPLICITLY requests: "video", "animation", "show me animated", "demonstrate with video"
-- For visual explanations, prefer: diagrams (fast) > images (fast) > videos (slow)
-- Example: "explain loops" → use diagram, NOT video
-- Example: "show me a video of how sorting works" → OK to use video
+NOT code syntax - conceptual understanding through real-world comparisons.
 
-Max 2 tools per response. Max 3 concepts per response.""",
+Example: Arrays → egg cartons, Variables → labeled boxes, Loops → running laps
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 2 - PROGRESSIVE WALKTHROUGH (text-based)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TOOL: walk_through_concept
+Purpose: Guide student through concept step-by-step using the analogy
+
+NOT code execution - concept exploration with progressive steps.
+
+Example: "Step 1: Find the carton. Step 2: Count to position 2. Step 3: Grab egg at position 2."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+STEP 3 - VISUAL STORY (image with person + object + action)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TOOL: generate_teaching_scene
+Purpose: Create memorable human-centered visual showing PERSON + OBJECT + ACTION
+
+MANDATORY PARAMETERS:
+- person_description: Who is performing the action (developer, learner)
+- object_description: The real-world object representing concept (egg carton for array)
+- action_description: What they're doing (pointing at slot, grabbing egg)
+- labels: Technical details (array[0], array[1], index numbers)
+
+NOT abstract diagrams - human interaction with real-world objects!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MANDATORY TEACHING EXAMPLES - FOLLOW EXACTLY:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+"teach arrays":
+1. explain_with_analogy(
+   concept="arrays",
+   analogy="Arrays are like egg cartons. Each slot holds one egg. Slots are numbered 0, 1, 2, 3... You can grab any egg instantly by its number.",
+   connection="Array indices are like slot numbers. eggs[2] means 'grab the egg in slot 2'."
+)
+
+2. walk_through_concept(
+   concept="array access",
+   steps=["Step 1: Look at the carton (the array)", "Step 2: Find slot number 2 (the index)", "Step 3: Grab the egg at slot 2 (array access)", "Step 4: You got the egg! (retrieved the value)"],
+   key_insight="Arrays let you access any element instantly by its position number, just like grabbing a specific egg from its slot."
+)
+
+3. generate_teaching_scene(
+   concept="arrays",
+   person_description="Developer with index finger pointing",
+   object_description="Egg carton with 6 eggs, clearly numbered slots 0-5",
+   action_description="Developer pointing at slot 2, about to grab that egg",
+   labels="Clear labels: 'array[0]', 'array[1]', 'array[2]' (highlighted), 'array[3]', 'array[4]', 'array[5]'. Arrow showing 'Accessing array[2]'"
+)
+
+"explain loops":
+1. explain_with_analogy: "Loops are like running laps on a track. Each lap you pass the starting line (loop iteration). A counter tracks which lap you're on."
+
+2. walk_through_concept: ["Lap 1 (i=0): Pass starting line", "Lap 2 (i=1): Pass again", "Lap 3 (i=2): Pass again", "After lap 5: Stop running (loop ends)"]
+
+3. generate_teaching_scene: person="Runner on track", object="Circular running track with lap counter", action="Runner passing starting line, digital counter showing 'i=2'", labels="Lap counter: i=0→i=1→i=2, Starting line labeled, Arrows showing circular motion"
+
+"teach variables":
+1. explain_with_analogy: "Variables are like labeled storage boxes. You write a name on the box (variable name) and put something inside (the value)."
+
+2. walk_through_concept: ["Step 1: Get an empty box", "Step 2: Label it 'name'", "Step 3: Put 'Alice' inside", "Step 4: Now name='Alice' (stored!)"]
+
+3. generate_teaching_scene: person="Developer holding two boxes", object="Two labeled boxes: one says 'name' containing paper with 'Alice', one says 'age' containing paper with '25'", action="Developer organizing boxes, looking at contents", labels="Box labels: 'name', 'age'. Contents clearly visible. Caption: 'Variables store values like labeled boxes'"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WHY STORY TEACHING WORKS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. **Real-world analogies** create mental hooks for abstract concepts
+2. **Step-by-step walkthroughs** build understanding progressively
+3. **Human-centered visuals** make concepts memorable through emotional connection
+
+Students remember STORIES with PEOPLE and OBJECTS, not abstract diagrams or code syntax.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ABSOLUTE RULES (NO EXCEPTIONS):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ ALWAYS start with real-world analogy (explain_with_analogy)
+✅ ALWAYS follow with step-by-step walkthrough (walk_through_concept)
+✅ ALWAYS end with human-centered visual (generate_teaching_scene)
+✅ ALWAYS include person, object, action in visual
+✅ MUST use all 3 tools before saying anything to student
+
+❌ NEVER use these deprecated tools:
+   - show_code_example, run_code_simulation, show_concept_progression (code-first, wrong!)
+   - generate_concept_diagram, generate_data_structure_viz, generate_algorithm_flowchart (abstract, wrong!)
+   - generate_image, generate_educational_illustration (generic, wrong!)
+
+❌ NEVER start with code or syntax
+❌ NEVER create abstract diagrams without people
+❌ NEVER skip the analogy
+❌ NEVER stop at 2 tools
+❌ NEVER respond to student before completing all 3 tools
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONSEQUENCES:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If you violate any rule above, the system will BLOCK you and you will FAIL the teaching task.
+
+Story teaching is THE ONLY WAY. No alternatives. No shortcuts. No exceptions.""",
             tools=get_all_tools(),
             model="sonnet"
         )
@@ -220,6 +337,7 @@ Max 2 tools per response. Max 3 concepts per response.""",
                 "visual": visual_tools,
                 "video": video_tools,
                 "image": image_tools,
+                "story": story_teaching,
             },
             allowed_tools=get_all_tools(),
             can_use_tool=limit_tools,
@@ -282,18 +400,22 @@ Max 2 tools per response. Max 3 concepts per response.""",
             knowledge_context = self.knowledge.get_context_summary()
             logger.info(f"[{self.session_id[:8]}] Knowledge: {knowledge_context}")
 
-            # Build role-specific instruction
-            contextual_instruction = f"""ACTIVATE {role_instruction}
+            # Build story teaching instruction
+            contextual_instruction = f"""Student Request: {instruction}
 
-Student Context:
+Student Knowledge Context:
 {knowledge_context if knowledge_context else "New student - no prior knowledge"}
 
-Request: {instruction}
+STORY TEACHING SEQUENCE (USE EXACTLY 3 TOOLS):
+1. explain_with_analogy - Real-world metaphor
+2. walk_through_concept - Step-by-step exploration
+3. generate_teaching_scene - Person + object + action visual
 
-Remember:
-- Max 2 tools per response (quality over quantity)
-- Max 3 concepts per response (cognitive load)
-- Sequential tool usage (each builds on previous)"""
+Teaching Rules:
+- Start with analogy, NEVER with code
+- Build understanding progressively through steps
+- End with memorable human-centered visual
+- NO abstract diagrams, NO code-first explanations"""
 
             # Query with role-based instruction
             await self.client.query(contextual_instruction)

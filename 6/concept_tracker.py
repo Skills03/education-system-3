@@ -91,48 +91,66 @@ class ConceptTracker:
     def validate_sequencing(self, tool_name: str, input_data: dict) -> tuple[bool, str]:
         """Check if tool builds on previous tools (sequential learning)
 
-        Sequential patterns (good):
-        - diagram → code_example (code references diagram concept)
-        - code_example → challenge (challenge uses same code pattern)
-        - challenge → review (review validates challenge)
+        STORY TEACHING SEQUENCE (MANDATORY):
+        1. explain_with_analogy (real-world metaphor)
+        2. walk_through_concept (progressive exploration)
+        3. generate_teaching_scene (person + object + action visual)
 
-        Parallel patterns (bad):
-        - diagram → unrelated_diagram (no connection)
-        - code_example → unrelated_challenge (no shared context)
+        Non-teaching patterns (for review/assessment):
+        - student_challenge → review_student_work
+        - create_interactive_challenge → review_student_work
         """
         if len(self.tools_used) == 0:
             return True, "First tool - no sequencing to validate"
 
         last_tool = self.tools_used[-1]
 
-        # Valid sequential patterns
-        valid_chains = {
-            "generate_concept_diagram": ["show_code_example", "create_interactive_challenge"],
-            "generate_data_structure_viz": ["show_code_example", "run_code_simulation"],
-            "generate_algorithm_flowchart": ["demonstrate_code", "show_code_example"],
-            "show_code_example": ["run_code_simulation", "create_interactive_challenge"],
-            "run_code_simulation": ["create_interactive_challenge", "student_challenge"],
-            "project_kickoff": ["code_live_increment", "demonstrate_code"],
-            "code_live_increment": ["demonstrate_code", "student_challenge"],
-            "demonstrate_code": ["student_challenge", "create_interactive_challenge"],
+        # STORY TEACHING SEQUENCE (strict enforcement)
+        story_teaching_chain = {
+            "explain_with_analogy": ["walk_through_concept"],
+            "walk_through_concept": ["generate_teaching_scene"],
+            "generate_teaching_scene": [],  # End of sequence
+        }
+
+        # Non-teaching chains (assessment/review)
+        assessment_chains = {
             "student_challenge": ["review_student_work"],
             "create_interactive_challenge": ["review_student_work"],
+            "review_student_work": ["student_challenge", "create_interactive_challenge"],
         }
+
+        # Combine all valid chains
+        valid_chains = {**story_teaching_chain, **assessment_chains}
 
         # Extract base tool name (remove mcp__ prefix)
         last_base = last_tool["name"].split("__")[-1]
         current_base = tool_name.split("__")[-1]
 
-        # Check if current tool is valid follow-up to last tool
-        if last_base in valid_chains:
-            allowed_next = valid_chains[last_base]
-            if current_base in allowed_next:
-                return True, f"Valid sequence: {last_base} → {current_base}"
-            else:
-                return False, f"Invalid sequence: {last_base} → {current_base}. Expected one of: {allowed_next}"
+        # STRICT ENFORCEMENT for story teaching tools
+        if last_base in story_teaching_chain:
+            allowed_next = story_teaching_chain[last_base]
+            if not allowed_next:
+                # End of sequence reached
+                return False, f"Story teaching sequence complete. No more tools allowed after {last_base}."
+            if current_base not in allowed_next:
+                return False, f"STORY TEACHING VIOLATION: {last_base} → {current_base}. MUST be: {last_base} → {allowed_next[0]}"
+            return True, f"✓ Story teaching sequence: {last_base} → {current_base}"
 
-        # If no chain defined, allow it (new pattern)
-        return True, f"No chain rule for {last_base} - allowing {current_base}"
+        # Soft check for non-teaching tools
+        if last_base in assessment_chains:
+            allowed_next = assessment_chains[last_base]
+            if current_base in allowed_next:
+                return True, f"Valid assessment sequence: {last_base} → {current_base}"
+            else:
+                # Warn but allow
+                return True, f"Non-standard sequence: {last_base} → {current_base} (allowing)"
+
+        # Unknown tool - check if it's a story teaching tool starting sequence
+        if current_base == "explain_with_analogy":
+            return True, "✓ Starting story teaching sequence with analogy"
+
+        # Default: allow but warn
+        return True, f"Unknown pattern: {last_base} → {current_base} (allowing)"
 
     def get_status(self) -> Dict:
         """Get current tracking status"""
@@ -177,13 +195,10 @@ class ConceptBasedPermissionSystem:
         return True, "Declaration already checked"
 
     def can_use_tool(self, tool_name: str, input_data: dict, agent_message: str) -> tuple[bool, str]:
-        """Main permission check - HARD 2-tool limit + soft concept/sequencing validation"""
+        """Main permission check - soft concept/sequencing validation (hard limit enforced in server.py)"""
 
-        # HARD LIMIT: Maximum 2 tools per request
-        HARD_TOOL_LIMIT = 2
-        if len(self.tracker.tools_used) >= HARD_TOOL_LIMIT:
-            logger.warning(f"[{self.session_id[:8]}] ✗ DENIED - Hard limit reached: {HARD_TOOL_LIMIT} tools already used")
-            return False, f"Maximum {HARD_TOOL_LIMIT} tools per response. Focus on quality over quantity."
+        # NOTE: Hard tool limit (3) is enforced in server.py limit_tools function
+        # This function only does soft validation (concepts, sequencing)
 
         # First tool call triggers concept declaration check (soft)
         if len(self.tracker.tools_used) == 0:
@@ -199,7 +214,7 @@ class ConceptBasedPermissionSystem:
         # Record tool usage
         self.tracker.add_tool_usage(tool_name, input_data)
 
-        logger.info(f"[{self.session_id[:8]}] ✓ Tool allowed ({len(self.tracker.tools_used)}/{HARD_TOOL_LIMIT}): {tool_name}")
+        logger.info(f"[{self.session_id[:8]}] ✓ Tool allowed (soft check passed): {tool_name}")
         return True, sequencing_msg if sequencing_valid else "Non-sequential but allowed"
 
     def reset(self):

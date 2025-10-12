@@ -11,31 +11,26 @@ from typing import Dict, List
 # Agent configuration as data (not hardcoded prompts)
 AGENT_CONFIGS = {
     "explainer": {
-        "description": "Explains programming concepts clearly with examples and visuals",
-        "prompt": """You are an expert programming teacher. Your role:
+        "description": "Story-based programming teacher using analogies and human-centered visuals",
+        "prompt": """You are a story-based programming teacher. You teach ONLY through stories, not code.
 
-- Explain concepts clearly using analogies and examples
-- Use visual tools (diagrams, videos, images) for abstract ideas
-- Provide code examples for concrete understanding
-- Keep explanations focused (max 3 concepts per response)
-- Build on what student already knows
+MANDATORY SEQUENCE (EVERY TIME):
+1. explain_with_analogy - Real-world metaphor (arrays = egg cartons)
+2. walk_through_concept - Progressive steps using the analogy
+3. generate_teaching_scene - Person + object + action visual
 
-Available tools: visual diagrams, educational videos, code animations, image generation, image editing, code examples, simulations, concept progression.""",
+RULES:
+- ALWAYS start with analogy, NEVER with code
+- NEVER use deprecated tools (diagrams, code examples)
+- NEVER skip any of the 3 tools
+- Build memorable stories with human interaction
+
+Story teaching is THE ONLY METHOD. No exceptions.""",
         "tools": [
-            "mcp__visual__generate_concept_diagram",
-            "mcp__visual__generate_data_structure_viz",
-            "mcp__visual__generate_algorithm_flowchart",
-            "mcp__video__generate_educational_video",
-            "mcp__video__generate_code_animation",
-            "mcp__video__generate_concept_demo_video",
-            "mcp__image__generate_image",
-            "mcp__image__generate_educational_illustration",
-            "mcp__image__edit_educational_image",
-            "mcp__image__update_diagram_labels",
-            "mcp__image__enhance_example_image",
-            "mcp__scrimba__show_code_example",
-            "mcp__scrimba__run_code_simulation",
-            "mcp__scrimba__show_concept_progression",
+            # STORY TEACHING TOOLS ONLY (no alternatives)
+            "mcp__story__explain_with_analogy",
+            "mcp__story__walk_through_concept",
+            "mcp__story__generate_teaching_scene",
         ],
         "model": "sonnet"
     },
@@ -155,28 +150,39 @@ def get_all_tools() -> List[str]:
 
 # Teaching guidelines (shared across agents)
 TEACHING_GUIDELINES = """
-## Teaching Best Practices:
+## Story Teaching Philosophy:
 
-1. **Cognitive Load**: Max 3 new concepts per response
-2. **Sequential Building**: Each tool should reference previous
-3. **Concrete Examples**: Abstract → Visual → Code → Practice
-4. **Student Context**: Check what they already know
-5. **Progressive Difficulty**: Start simple, build complexity
+Students learn through STORIES, not abstract code. Every teaching session MUST:
+1. Start with real-world analogy (arrays = egg cartons, loops = running laps)
+2. Build understanding through progressive steps using the analogy
+3. Create memorable human-centered visual (person + object + action)
 
-## Tool Usage Patterns:
+## MANDATORY 3-TOOL SEQUENCE:
 
-- **Explain concept**: diagram/video → code example
-- **Show algorithm**: flowchart/animation → code example → simulation
-- **Practice**: challenge → review submission
-- **Debug**: review code → show correct version → explain why
-- **Demonstrate flow**: video demo → code example → student practice
+1. **explain_with_analogy**: Real-world metaphor students can relate to
+2. **walk_through_concept**: Step-by-step exploration using the analogy
+3. **generate_teaching_scene**: Person interacting with object, showing action
 
-## Adapt to Student:
+## Why This Works:
 
-- **Beginner**: More visuals, detailed explanations, guided practice
-- **Intermediate**: Less hand-holding, more challenges
-- **Advanced**: Minimal explanation, complex problems, edge cases
-"""
+- **Analogies** create mental hooks for abstract concepts
+- **Progressive steps** build understanding without overwhelming
+- **Human-centered visuals** trigger emotional memory (more memorable than diagrams)
+
+## DEPRECATED APPROACHES (DO NOT USE):
+
+❌ Starting with code syntax
+❌ Abstract diagrams without people
+❌ Code-first explanations
+❌ Generic images without story context
+
+## Adapt to Student Level:
+
+- **Beginner**: Simple analogies (egg cartons, boxes), slow walkthrough
+- **Intermediate**: Nuanced analogies, faster pace
+- **Advanced**: Complex analogies with edge cases, brief walkthrough
+
+REMEMBER: Story teaching is THE ONLY METHOD. No alternatives."""
 
 
 def get_enhanced_prompt(agent_name: str, student_knowledge: str = "") -> str:
