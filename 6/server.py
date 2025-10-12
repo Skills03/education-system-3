@@ -56,6 +56,11 @@ from tools.visual_tools import (
     generate_algorithm_flowchart,
     generate_architecture_diagram,
 )
+from tools.video_tools import (
+    generate_educational_video,
+    generate_code_animation,
+    generate_concept_demo_video,
+)
 
 # Import agent configuration (dynamic, SDK-native)
 from agent_config import create_agent_definitions, get_enhanced_prompt, get_all_tools
@@ -104,6 +109,16 @@ visual_tools = create_sdk_mcp_server(
         generate_data_structure_viz,
         generate_algorithm_flowchart,
         generate_architecture_diagram,
+    ],
+)
+
+video_tools = create_sdk_mcp_server(
+    name="video_tools",
+    version="1.0.0",
+    tools=[
+        generate_educational_video,
+        generate_code_animation,
+        generate_concept_demo_video,
     ],
 )
 
@@ -162,7 +177,7 @@ class UnifiedSession:
 **CHALLENGER MODE**: Create practice problems matching skill level
 **ASSESSOR MODE**: Test understanding and identify knowledge gaps
 
-Tools available: visual diagrams, code examples, simulations, challenges, code review.
+Tools available: visual diagrams, educational videos, code animations, code examples, simulations, challenges, code review.
 Max 2 tools per response. Max 3 concepts per response.""",
             tools=get_all_tools(),
             model="sonnet"
@@ -174,6 +189,7 @@ Max 2 tools per response. Max 3 concepts per response.""",
                 "scrimba": scrimba_tools,
                 "live_coding": live_coding_tools,
                 "visual": visual_tools,
+                "video": video_tools,
             },
             allowed_tools=get_all_tools(),
             can_use_tool=limit_tools,
@@ -494,6 +510,7 @@ if __name__ == '__main__':
 
     print(f"\n🔧 TEACHING TOOLS ({tool_count} total):")
     print("  • Visual Tools    - Diagrams & visualizations")
+    print("  • Video Tools     - Educational videos & animations")
     print("  • Concept Tools   - Examples & simulations")
     print("  • Project Tools   - Live coding & review")
 

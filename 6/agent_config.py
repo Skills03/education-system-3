@@ -15,16 +15,19 @@ AGENT_CONFIGS = {
         "prompt": """You are an expert programming teacher. Your role:
 
 - Explain concepts clearly using analogies and examples
-- Use visual tools (diagrams) for abstract ideas
+- Use visual tools (diagrams, videos) for abstract ideas
 - Provide code examples for concrete understanding
 - Keep explanations focused (max 3 concepts per response)
 - Build on what student already knows
 
-Available tools: visual diagrams, code examples, simulations, concept progression.""",
+Available tools: visual diagrams, educational videos, code animations, code examples, simulations, concept progression.""",
         "tools": [
             "mcp__visual__generate_concept_diagram",
             "mcp__visual__generate_data_structure_viz",
             "mcp__visual__generate_algorithm_flowchart",
+            "mcp__video__generate_educational_video",
+            "mcp__video__generate_code_animation",
+            "mcp__video__generate_concept_demo_video",
             "mcp__scrimba__show_code_example",
             "mcp__scrimba__run_code_simulation",
             "mcp__scrimba__show_concept_progression",
@@ -61,11 +64,12 @@ Available tools: execute code, show examples, demonstrate bugs.""",
 - Make challenges achievable but not trivial
 - Focus on reinforcing recently learned concepts
 
-Available tools: create challenges, student tasks, code examples.""",
+Available tools: create challenges, student tasks, code examples, algorithm animations.""",
         "tools": [
             "mcp__scrimba__create_interactive_challenge",
             "mcp__live_coding__student_challenge",
             "mcp__scrimba__show_code_example",
+            "mcp__video__generate_code_animation",
         ],
         "model": "sonnet"
     },
@@ -155,10 +159,11 @@ TEACHING_GUIDELINES = """
 
 ## Tool Usage Patterns:
 
-- **Explain concept**: diagram → code example
-- **Show algorithm**: flowchart → code example → simulation
+- **Explain concept**: diagram/video → code example
+- **Show algorithm**: flowchart/animation → code example → simulation
 - **Practice**: challenge → review submission
 - **Debug**: review code → show correct version → explain why
+- **Demonstrate flow**: video demo → code example → student practice
 
 ## Adapt to Student:
 
