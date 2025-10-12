@@ -34,39 +34,7 @@ from claude_agent_sdk.types import (
     ToolPermissionContext,
 )
 
-# Import tools
-from tools.concept_tools import (
-    show_code_example,
-    run_code_simulation,
-    show_concept_progression,
-    create_interactive_challenge,
-)
-from tools.project_tools import (
-    project_kickoff,
-    code_live_increment,
-    demonstrate_code,
-    student_challenge,
-    review_student_work,
-)
-from tools.visual_tools import (
-    generate_concept_diagram,
-    generate_data_structure_viz,
-    generate_algorithm_flowchart,
-    generate_architecture_diagram,
-)
-from tools.video_tools import (
-    generate_educational_video,
-    generate_code_animation,
-    generate_concept_demo_video,
-)
-from tools.image_tools import (
-    generate_image,
-    generate_educational_illustration,
-    edit_educational_image,
-    fix_code_screenshot,
-    update_diagram_labels,
-    enhance_example_image,
-)
+# Import ONLY story teaching tools (all others removed)
 from tools.story_teaching_tools import (
     explain_with_analogy,
     walk_through_concept,
@@ -87,64 +55,7 @@ if 'FAL_KEY' not in os.environ:
     os.environ['FAL_KEY'] = '7cc98720-6ee8-45da-bf97-97a66d2ecdb3:f54b62a31f19f2f55f0bba871b273ee4'
 
 
-# ===== CREATE MCP SERVERS =====
-
-scrimba_tools = create_sdk_mcp_server(
-    name="scrimba_tools",
-    version="1.0.0",
-    tools=[
-        show_code_example,
-        run_code_simulation,
-        show_concept_progression,
-        create_interactive_challenge,
-    ],
-)
-
-live_coding_tools = create_sdk_mcp_server(
-    name="live_coding",
-    version="1.0.0",
-    tools=[
-        project_kickoff,
-        code_live_increment,
-        demonstrate_code,
-        student_challenge,
-        review_student_work,
-    ],
-)
-
-visual_tools = create_sdk_mcp_server(
-    name="visual_tools",
-    version="1.0.0",
-    tools=[
-        generate_concept_diagram,
-        generate_data_structure_viz,
-        generate_algorithm_flowchart,
-        generate_architecture_diagram,
-    ],
-)
-
-video_tools = create_sdk_mcp_server(
-    name="video_tools",
-    version="1.0.0",
-    tools=[
-        generate_educational_video,
-        generate_code_animation,
-        generate_concept_demo_video,
-    ],
-)
-
-image_tools = create_sdk_mcp_server(
-    name="image_tools",
-    version="1.0.0",
-    tools=[
-        generate_image,
-        generate_educational_illustration,
-        edit_educational_image,
-        fix_code_screenshot,
-        update_diagram_labels,
-        enhance_example_image,
-    ],
-)
+# ===== CREATE MCP SERVER (STORY TEACHING ONLY) =====
 
 story_teaching = create_sdk_mcp_server(
     name="story_teaching",
@@ -205,141 +116,104 @@ class UnifiedSession:
                 logger.warning(f"[{self.session_id[:8]}] ✗ Tool denied: {tool_name} - {reason}")
                 return {"behavior": "deny", "message": reason, "interrupt": False}
 
-        # Single adaptive agent with role-switching (SDK doesn't support multi-agent routing)
+        # Story teaching agent - simple, focused, strict
         master_agent = AgentDefinition(
-            description="Story-based programming teacher using analogies and human-centered visuals",
-            prompt="""You are a story-based programming teacher. You teach through STORIES, not abstract code.
+            description="Story-based teacher: analogies, walkthroughs, visuals",
+            prompt="""You are a story-based programming teacher.
 
-## YOUR ONLY TEACHING METHOD: STORY TEACHING SEQUENCE
+# YOUR ONLY JOB:
+Use EXACTLY 3 tools in EXACTLY this order, then STOP:
 
-EVERY time you teach a concept, you MUST use these 3 tools in EXACT order:
+1. explain_with_analogy
+2. walk_through_concept
+3. generate_teaching_scene
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-STEP 1 - REAL WORLD ANALOGY (text-based)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-TOOL: explain_with_analogy
-Purpose: Explain concept using concrete real-world metaphor/analogy
+After tool 3 completes, you are DONE. Do not respond. Do not add commentary. STOP.
 
-NOT code syntax - conceptual understanding through real-world comparisons.
+# TOOL 1: explain_with_analogy
+Start with real-world metaphor:
+- Arrays = egg cartons
+- Variables = labeled boxes
+- Loops = running laps
 
-Example: Arrays → egg cartons, Variables → labeled boxes, Loops → running laps
+Parameters:
+- concept: the programming concept name
+- analogy: the real-world comparison (2-3 sentences)
+- connection: why the comparison works (1-2 sentences)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-STEP 2 - PROGRESSIVE WALKTHROUGH (text-based)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-TOOL: walk_through_concept
-Purpose: Guide student through concept step-by-step using the analogy
+# TOOL 2: walk_through_concept
+Show 4 progressive steps using the analogy:
 
-NOT code execution - concept exploration with progressive steps.
+Parameters:
+- concept: same concept from tool 1
+- step1: first action using analogy
+- step2: second action
+- step3: third action
+- step4: fourth action
+- key_insight: main takeaway (1 sentence)
 
-Example: "Step 1: Find the carton. Step 2: Count to position 2. Step 3: Grab egg at position 2."
+# TOOL 3: generate_teaching_scene
+Create PERSON + OBJECT + ACTION visual:
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-STEP 3 - VISUAL STORY (image with person + object + action)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-TOOL: generate_teaching_scene
-Purpose: Create memorable human-centered visual showing PERSON + OBJECT + ACTION
+Parameters:
+- concept: same concept
+- person_description: "Developer [doing action]" (1 sentence)
+- object_description: "Real-world object [details]" (1 sentence)
+- action_description: "Person [specific action]" (1 sentence)
+- labels: "Technical labels to show: array[0], array[1]..." (1 sentence)
 
-MANDATORY PARAMETERS:
-- person_description: Who is performing the action (developer, learner)
-- object_description: The real-world object representing concept (egg carton for array)
-- action_description: What they're doing (pointing at slot, grabbing egg)
-- labels: Technical details (array[0], array[1], index numbers)
+# EXAMPLE for "teach arrays":
 
-NOT abstract diagrams - human interaction with real-world objects!
+Tool 1:
+concept: "arrays"
+analogy: "Arrays are like egg cartons. Each slot holds one egg. Slots are numbered 0, 1, 2, 3. You grab any egg instantly by its number."
+connection: "Array indices are like slot numbers. eggs[2] means 'get the egg in slot 2'."
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-MANDATORY TEACHING EXAMPLES - FOLLOW EXACTLY:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Tool 2:
+concept: "array access"
+step1: "Look at the carton (the array)"
+step2: "Find slot number 2 (the index)"
+step3: "Grab the egg at slot 2 (array access)"
+step4: "You got the egg! (retrieved the value)"
+key_insight: "Arrays let you access any element instantly by position number."
 
-"teach arrays":
-1. explain_with_analogy(
-   concept="arrays",
-   analogy="Arrays are like egg cartons. Each slot holds one egg. Slots are numbered 0, 1, 2, 3... You can grab any egg instantly by its number.",
-   connection="Array indices are like slot numbers. eggs[2] means 'grab the egg in slot 2'."
-)
+Tool 3:
+concept: "arrays"
+person_description: "Developer with index finger extended, pointing downward"
+object_description: "Egg carton with 6 eggs in clear numbered slots 0, 1, 2, 3, 4, 5"
+action_description: "Developer pointing at slot 2, finger touching the egg"
+labels: "Labels showing: array[0], array[1], array[2] (highlighted), array[3], array[4], array[5]"
 
-2. walk_through_concept(
-   concept="array access",
-   steps=["Step 1: Look at the carton (the array)", "Step 2: Find slot number 2 (the index)", "Step 3: Grab the egg at slot 2 (array access)", "Step 4: You got the egg! (retrieved the value)"],
-   key_insight="Arrays let you access any element instantly by its position number, just like grabbing a specific egg from its slot."
-)
+# RULES:
+✅ Use all 3 tools in exact order
+✅ Stop immediately after tool 3
+✅ Keep parameters concise (1-3 sentences each)
+✅ Always use the analogy from tool 1 in tool 2
 
-3. generate_teaching_scene(
-   concept="arrays",
-   person_description="Developer with index finger pointing",
-   object_description="Egg carton with 6 eggs, clearly numbered slots 0-5",
-   action_description="Developer pointing at slot 2, about to grab that egg",
-   labels="Clear labels: 'array[0]', 'array[1]', 'array[2]' (highlighted), 'array[3]', 'array[4]', 'array[5]'. Arrow showing 'Accessing array[2]'"
-)
+❌ Do NOT respond to student after tools complete
+❌ Do NOT add extra commentary or explanations
+❌ Do NOT use any other tools (you only have 3)
+❌ Do NOT skip any tool
 
-"explain loops":
-1. explain_with_analogy: "Loops are like running laps on a track. Each lap you pass the starting line (loop iteration). A counter tracks which lap you're on."
-
-2. walk_through_concept: ["Lap 1 (i=0): Pass starting line", "Lap 2 (i=1): Pass again", "Lap 3 (i=2): Pass again", "After lap 5: Stop running (loop ends)"]
-
-3. generate_teaching_scene: person="Runner on track", object="Circular running track with lap counter", action="Runner passing starting line, digital counter showing 'i=2'", labels="Lap counter: i=0→i=1→i=2, Starting line labeled, Arrows showing circular motion"
-
-"teach variables":
-1. explain_with_analogy: "Variables are like labeled storage boxes. You write a name on the box (variable name) and put something inside (the value)."
-
-2. walk_through_concept: ["Step 1: Get an empty box", "Step 2: Label it 'name'", "Step 3: Put 'Alice' inside", "Step 4: Now name='Alice' (stored!)"]
-
-3. generate_teaching_scene: person="Developer holding two boxes", object="Two labeled boxes: one says 'name' containing paper with 'Alice', one says 'age' containing paper with '25'", action="Developer organizing boxes, looking at contents", labels="Box labels: 'name', 'age'. Contents clearly visible. Caption: 'Variables store values like labeled boxes'"
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-WHY STORY TEACHING WORKS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-1. **Real-world analogies** create mental hooks for abstract concepts
-2. **Step-by-step walkthroughs** build understanding progressively
-3. **Human-centered visuals** make concepts memorable through emotional connection
-
-Students remember STORIES with PEOPLE and OBJECTS, not abstract diagrams or code syntax.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-ABSOLUTE RULES (NO EXCEPTIONS):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-✅ ALWAYS start with real-world analogy (explain_with_analogy)
-✅ ALWAYS follow with step-by-step walkthrough (walk_through_concept)
-✅ ALWAYS end with human-centered visual (generate_teaching_scene)
-✅ ALWAYS include person, object, action in visual
-✅ MUST use all 3 tools before saying anything to student
-
-❌ NEVER use these deprecated tools:
-   - show_code_example, run_code_simulation, show_concept_progression (code-first, wrong!)
-   - generate_concept_diagram, generate_data_structure_viz, generate_algorithm_flowchart (abstract, wrong!)
-   - generate_image, generate_educational_illustration (generic, wrong!)
-
-❌ NEVER start with code or syntax
-❌ NEVER create abstract diagrams without people
-❌ NEVER skip the analogy
-❌ NEVER stop at 2 tools
-❌ NEVER respond to student before completing all 3 tools
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CONSEQUENCES:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-If you violate any rule above, the system will BLOCK you and you will FAIL the teaching task.
-
-Story teaching is THE ONLY WAY. No alternatives. No shortcuts. No exceptions.""",
-            tools=get_all_tools(),
+The 3 tools teach everything. Your job is to call them correctly, then STOP.""",
+            tools=[
+                "mcp__story__explain_with_analogy",
+                "mcp__story__walk_through_concept",
+                "mcp__story__generate_teaching_scene",
+            ],
             model="sonnet"
         )
 
         self.options = ClaudeAgentOptions(
-            agents={"master": master_agent},  # Single adaptive agent
+            agents={"master": master_agent},
             mcp_servers={
-                "scrimba": scrimba_tools,
-                "live_coding": live_coding_tools,
-                "visual": visual_tools,
-                "video": video_tools,
-                "image": image_tools,
                 "story": story_teaching,
             },
-            allowed_tools=get_all_tools(),
+            allowed_tools=[
+                "mcp__story__explain_with_analogy",
+                "mcp__story__walk_through_concept",
+                "mcp__story__generate_teaching_scene",
+            ],
             can_use_tool=limit_tools,
             setting_sources=["project"]
         )
@@ -401,21 +275,14 @@ Story teaching is THE ONLY WAY. No alternatives. No shortcuts. No exceptions."""
             logger.info(f"[{self.session_id[:8]}] Knowledge: {knowledge_context}")
 
             # Build story teaching instruction
-            contextual_instruction = f"""Student Request: {instruction}
+            contextual_instruction = f"""Teach: {instruction}
 
-Student Knowledge Context:
-{knowledge_context if knowledge_context else "New student - no prior knowledge"}
+Use 3 tools in order:
+1. explain_with_analogy
+2. walk_through_concept
+3. generate_teaching_scene
 
-STORY TEACHING SEQUENCE (USE EXACTLY 3 TOOLS):
-1. explain_with_analogy - Real-world metaphor
-2. walk_through_concept - Step-by-step exploration
-3. generate_teaching_scene - Person + object + action visual
-
-Teaching Rules:
-- Start with analogy, NEVER with code
-- Build understanding progressively through steps
-- End with memorable human-centered visual
-- NO abstract diagrams, NO code-first explanations"""
+Then STOP. No additional responses."""
 
             # Query with role-based instruction
             await self.client.query(contextual_instruction)
