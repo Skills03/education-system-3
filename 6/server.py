@@ -31,8 +31,6 @@ from claude_agent_sdk import (
     create_sdk_mcp_server,
 )
 from claude_agent_sdk.types import (
-    PermissionResultAllow,
-    PermissionResultDeny,
     ToolPermissionContext,
 )
 
@@ -169,7 +167,7 @@ class UnifiedSession:
             tool_name: str,
             input_data: dict[str, any],
             context: ToolPermissionContext
-        ) -> PermissionResultAllow | PermissionResultDeny:
+        ):
             # Check concept limit and sequencing
             can_use, reason = self.concept_permission.can_use_tool(
                 tool_name,
@@ -179,14 +177,10 @@ class UnifiedSession:
 
             if can_use:
                 logger.info(f"[{self.session_id[:8]}] ✓ Tool allowed: {tool_name} - {reason}")
-                return PermissionResultAllow(behavior="allow")
+                return {"behavior": "allow", "updatedInput": input_data}
             else:
                 logger.warning(f"[{self.session_id[:8]}] ✗ Tool denied: {tool_name} - {reason}")
-                return PermissionResultDeny(
-                    behavior="deny",
-                    message=reason,
-                    interrupt=False
-                )
+                return {"behavior": "deny", "message": reason, "interrupt": False}
 
         # Single adaptive agent with role-switching (SDK doesn't support multi-agent routing)
         master_agent = AgentDefinition(
@@ -205,6 +199,13 @@ IMPORTANT IMAGE HANDLING:
 - When given image URLs (https://...): use edit_educational_image tool directly with the URL
 - Image tools accept URLs directly - do NOT try to fetch/download/read images first
 - Example: User gives "https://example.com/cat.jpg" → call edit_educational_image with image_url="https://example.com/cat.jpg"
+
+IMPORTANT VIDEO TOOL POLICY:
+- Video generation takes 3-5 minutes and is expensive
+- ONLY use video tools if user EXPLICITLY requests: "video", "animation", "show me animated", "demonstrate with video"
+- For visual explanations, prefer: diagrams (fast) > images (fast) > videos (slow)
+- Example: "explain loops" → use diagram, NOT video
+- Example: "show me a video of how sorting works" → OK to use video
 
 Max 2 tools per response. Max 3 concepts per response.""",
             tools=get_all_tools(),
