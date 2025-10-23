@@ -34,11 +34,18 @@ from claude_agent_sdk.types import (
     ToolPermissionContext,
 )
 
-# Import ONLY story teaching tools (all others removed)
+# Import story teaching tools
 from tools.story_teaching_tools import (
     explain_with_analogy,
     walk_through_concept,
     generate_teaching_scene,
+)
+
+# Import app building tools
+from tools.app_building_tools import (
+    list_app_templates,
+    customize_app_template,
+    generate_client_proposal,
 )
 
 # Import agent configuration (dynamic, SDK-native)
@@ -55,7 +62,7 @@ if 'FAL_KEY' not in os.environ:
     os.environ['FAL_KEY'] = '7cc98720-6ee8-45da-bf97-97a66d2ecdb3:f54b62a31f19f2f55f0bba871b273ee4'
 
 
-# ===== CREATE MCP SERVER (STORY TEACHING ONLY) =====
+# ===== CREATE MCP SERVERS =====
 
 story_teaching = create_sdk_mcp_server(
     name="story_teaching",
@@ -64,6 +71,16 @@ story_teaching = create_sdk_mcp_server(
         explain_with_analogy,
         walk_through_concept,
         generate_teaching_scene,
+    ],
+)
+
+app_builder = create_sdk_mcp_server(
+    name="app_builder",
+    version="1.0.0",
+    tools=[
+        list_app_templates,
+        customize_app_template,
+        generate_client_proposal,
     ],
 )
 
@@ -116,13 +133,19 @@ class UnifiedSession:
                 logger.warning(f"[{self.session_id[:8]}] ✗ Tool denied: {tool_name} - {reason}")
                 return {"behavior": "deny", "message": reason, "interrupt": False}
 
-        # Story teaching agent - simple, focused, strict
-        master_agent = AgentDefinition(
-            description="Story-based teacher: analogies, walkthroughs, visuals",
-            prompt="""You are a story-based programming teacher.
+        # Unified agent - both teaching AND app building
+        unified_agent = AgentDefinition(
+            description="Teaching and app building agent for income generation",
+            prompt="""You are a dual-purpose agent.
 
-# YOUR ONLY JOB:
-Use EXACTLY 3 tools in EXACTLY this order, then STOP:
+DETECT user intent:
+- Teaching queries ("teach me", "explain", "how does"): Use teaching tools
+- Building queries ("build", "create app", "portfolio", "client needs"): Use app tools
+
+---
+
+# TEACHING MODE:
+Use EXACTLY 3 tools in order, then STOP:
 
 1. explain_with_analogy
 2. walk_through_concept
@@ -192,27 +215,45 @@ labels: "Labels showing: array[0], array[1], array[2] (highlighted), array[3], a
 
 ❌ Do NOT respond to student after tools complete
 ❌ Do NOT add extra commentary or explanations
-❌ Do NOT use any other tools (you only have 3)
 ❌ Do NOT skip any tool
 
-The 3 tools teach everything. Your job is to call them correctly, then STOP.""",
+---
+
+# BUILDING MODE:
+Use app builder tools in order:
+
+1. list_app_templates - Show templates
+2. customize_app_template - Generate code for client
+3. generate_client_proposal - Create professional proposal
+
+PRICING: Portfolio $50-150, Menu $200-500, Booking $300-800
+
+FOCUS: 15-30 minute builds, client-ready apps, income generation.
+
+Use tools, then stop.""",
             tools=[
                 "mcp__story__explain_with_analogy",
                 "mcp__story__walk_through_concept",
                 "mcp__story__generate_teaching_scene",
+                "mcp__app_builder__list_app_templates",
+                "mcp__app_builder__customize_app_template",
+                "mcp__app_builder__generate_client_proposal",
             ],
             model="sonnet"
         )
 
         self.options = ClaudeAgentOptions(
-            agents={"master": master_agent},
             mcp_servers={
                 "story": story_teaching,
+                "app_builder": app_builder,
             },
             allowed_tools=[
                 "mcp__story__explain_with_analogy",
                 "mcp__story__walk_through_concept",
                 "mcp__story__generate_teaching_scene",
+                "mcp__app_builder__list_app_templates",
+                "mcp__app_builder__customize_app_template",
+                "mcp__app_builder__generate_client_proposal",
             ],
             can_use_tool=limit_tools,
             setting_sources=["project"]
@@ -245,47 +286,17 @@ The 3 tools teach everything. Your job is to call them correctly, then STOP.""",
             self.concept_permission.reset()
             self.current_agent_message = ""
 
-            # Route to appropriate role
-            selected_role, confidence = self.router.route(instruction, self.messages)
-
-            role_map = {
-                "explainer": "EXPLAINER MODE",
-                "reviewer": "REVIEWER MODE",
-                "challenger": "CHALLENGER MODE",
-                "assessor": "ASSESSOR MODE"
-            }
-
-            role_instruction = role_map.get(selected_role, "EXPLAINER MODE")
-            routing_msg = f"🎯 Using {role_instruction} (confidence: {confidence:.0%})"
-
-            logger.info(f"[{self.session_id[:8]}] {routing_msg}")
-
-            # Send routing notification to frontend
-            if self.session_id in message_queues:
-                message_queues[self.session_id].put({
-                    "type": "routing",
-                    "agent": selected_role,
-                    "confidence": confidence,
-                    "content": routing_msg,
-                    "timestamp": datetime.now().isoformat()
-                })
-
+            # SDK auto-routes to appropriate agent based on descriptions
+            # Just send the instruction directly
+            
+            logger.info(f"[{self.session_id[:8]}] Query: {instruction}")
+            
             # Get student knowledge context
             knowledge_context = self.knowledge.get_context_summary()
             logger.info(f"[{self.session_id[:8]}] Knowledge: {knowledge_context}")
 
-            # Build story teaching instruction
-            contextual_instruction = f"""Teach: {instruction}
-
-Use 3 tools in order:
-1. explain_with_analogy
-2. walk_through_concept
-3. generate_teaching_scene
-
-Then STOP. No additional responses."""
-
-            # Query with role-based instruction
-            await self.client.query(contextual_instruction)
+            # SDK picks agent automatically based on query + agent descriptions
+            await self.client.query(instruction)
 
             message_count = 0
             async for msg in self.client.receive_response():
@@ -311,9 +322,9 @@ Then STOP. No additional responses."""
             concepts_taught = self.concept_permission.tracker.declared_concepts
             if concepts_taught:
                 self.knowledge.record_session(
-                    agent_used=selected_role,
+                    agent_used="auto",  # SDK auto-routes
                     concepts_taught=concepts_taught,
-                    success=True  # TODO: Determine success based on assessment
+                    success=True
                 )
                 self.knowledge.save()
                 logger.info(f"[{self.session_id[:8]}] 💾 Knowledge saved: {len(concepts_taught)} concepts")

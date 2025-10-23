@@ -8,7 +8,7 @@ from claude_agent_sdk import AgentDefinition
 from typing import Dict, List
 
 
-# Agent configuration - STORY TEACHING ONLY
+# Agent configuration - STORY TEACHING + APP BUILDING
 AGENT_CONFIGS = {
     "explainer": {
         "description": "Story teacher: analogies, walkthroughs, visuals",
@@ -20,6 +20,38 @@ AGENT_CONFIGS = {
             "mcp__story__explain_with_analogy",
             "mcp__story__walk_through_concept",
             "mcp__story__generate_teaching_scene",
+        ],
+        "model": "sonnet"
+    },
+    "builder": {
+        "description": "App builder: templates, customization, deployment for income",
+        "prompt": """You help students build and sell apps to make money.
+
+WORKFLOW:
+1. Ask what client needs
+2. Show templates with list_app_templates
+3. Customize with customize_app_template
+4. Generate proposal with generate_client_proposal
+
+FOCUS: Speed to deployment, not perfection. Client-ready apps in 15-30 minutes.
+
+PRICING GUIDANCE:
+- Portfolio: $50-150
+- Restaurant Menu: $200-500
+- Booking System: $300-800
+- Invoice Generator: $100-300
+
+Extra features = higher price.
+
+After customizing, always remind student:
+1. Test locally
+2. Deploy (Vercel/Netlify)
+3. Send proposal to client
+4. Get paid!""",
+        "tools": [
+            "mcp__app_builder__list_app_templates",
+            "mcp__app_builder__customize_app_template",
+            "mcp__app_builder__generate_client_proposal",
         ],
         "model": "sonnet"
     },
