@@ -104,21 +104,24 @@ class UnifiedSession:
         self.concept_permission = ConceptBasedPermissionSystem(session_id)
         self.client = None  # Persistent client for conversation memory
         self.current_agent_message = ""  # Store agent text for concept parsing
+        self.current_instruction = ""  # Store current instruction for tool limit detection
         self.router = AgentRouter()  # Intelligent agent routing
         self.knowledge = StudentKnowledgeTracker(session_id=session_id)  # Session-scoped student knowledge
 
-        # Concept-based permission system (allows 3 tools)
+        # Concept-based permission system (dynamic limits)
         async def limit_tools(
             tool_name: str,
             input_data: dict[str, any],
             context: ToolPermissionContext
         ):
-            # HARD LIMIT: 3 tools (2 text + 1 visual)
-            HARD_TOOL_LIMIT = 3
+            # Dynamic limit: 10 for building, 3 for teaching
+            is_building = any(word in self.current_instruction.lower() for word in ['build', 'create', 'portfolio', 'website', 'app', 'menu', 'booking', 'invoice'])
+            HARD_TOOL_LIMIT = 10 if is_building else 3
             tool_count = len(self.concept_permission.tracker.tools_used)
 
             if tool_count >= HARD_TOOL_LIMIT:
-                logger.warning(f"[{self.session_id[:8]}] ✗ DENIED - {HARD_TOOL_LIMIT} tools already used")
+                mode = "BUILD" if is_building else "TEACH"
+                logger.warning(f"[{self.session_id[:8]}] ✗ DENIED - {HARD_TOOL_LIMIT} tools used ({mode} mode)")
                 return PermissionResultDeny(behavior="deny", message=f"Maximum {HARD_TOOL_LIMIT} tools per response.")
 
             # Check concept limit and sequencing
@@ -129,7 +132,8 @@ class UnifiedSession:
             )
 
             if can_use:
-                logger.info(f"[{self.session_id[:8]}] ✓ Tool allowed ({tool_count+1}/{HARD_TOOL_LIMIT}): {tool_name}")
+                mode = "BUILD" if is_building else "TEACH"
+                logger.info(f"[{self.session_id[:8]}] ✓ Tool allowed ({tool_count+1}/{HARD_TOOL_LIMIT} {mode}): {tool_name}")
                 return PermissionResultAllow(behavior="allow", updated_input=input_data)
             else:
                 logger.warning(f"[{self.session_id[:8]}] ✗ Tool denied: {tool_name} - {reason}")
@@ -292,6 +296,7 @@ The 3 building tools create sellable apps.""",
             # Reset concept permission system for this request
             self.concept_permission.reset()
             self.current_agent_message = ""
+            self.current_instruction = instruction  # Store for tool limit detection
 
             # SDK auto-routes to appropriate agent based on descriptions
             # Just send the instruction directly
