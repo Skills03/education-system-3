@@ -108,44 +108,20 @@ class UnifiedSession:
         self.router = AgentRouter()  # Intelligent agent routing
         self.knowledge = StudentKnowledgeTracker(session_id=session_id)  # Session-scoped student knowledge
 
-        # Concept-based permission system (dynamic limits)
+        # Main agent permission: ONLY Task tool allowed
         async def limit_tools(
             tool_name: str,
             input_data: dict[str, any],
             context: ToolPermissionContext
         ):
-            # Block all Claude Code interactive tools - only allow app_builder MCP tools
-            ALLOWED_MCP_TOOLS = [
-                "mcp__app_builder__list_app_templates",
-                "mcp__app_builder__customize_app_template",
-                "mcp__app_builder__generate_client_proposal",
-            ]
-            
-            if tool_name not in ALLOWED_MCP_TOOLS:
-                logger.warning(f"[{self.session_id[:8]}] ✗ BLOCKED: {tool_name}")
-                return PermissionResultDeny(behavior="deny", message=f"Only app_builder MCP tools allowed.")
-            
-            # Tool limit for building mode
-            HARD_TOOL_LIMIT = 10
-            tool_count = len(self.concept_permission.tracker.tools_used)
+            # Force delegation via Task tool - block direct MCP access
+            if tool_name != "Task":
+                logger.warning(f"[{self.session_id[:8]}] ✗ BLOCKED: {tool_name} - Main agent must delegate via Task")
+                return PermissionResultDeny(behavior="deny", message=f"Use Task tool to delegate to builder subagent with subagent_type='builder'")
 
-            if tool_count >= HARD_TOOL_LIMIT:
-                logger.warning(f"[{self.session_id[:8]}] ✗ DENIED - {HARD_TOOL_LIMIT} tools used (BUILD mode)")
-                return PermissionResultDeny(behavior="deny", message=f"Maximum {HARD_TOOL_LIMIT} tools per response.")
-
-            # Check concept limit and sequencing
-            can_use, reason = self.concept_permission.can_use_tool(
-                tool_name,
-                input_data,
-                self.current_agent_message
-            )
-
-            if can_use:
-                logger.info(f"[{self.session_id[:8]}] ✓ Tool allowed ({tool_count+1}/{HARD_TOOL_LIMIT} BUILD): {tool_name}")
-                return PermissionResultAllow(behavior="allow", updated_input=input_data)
-            else:
-                logger.warning(f"[{self.session_id[:8]}] ✗ Tool denied: {tool_name} - {reason}")
-                return PermissionResultDeny(behavior="deny", message=reason)
+            # Allow Task tool
+            logger.info(f"[{self.session_id[:8]}] ✓ Task tool allowed - delegating to builder subagent")
+            return PermissionResultAllow(behavior="allow", updated_input=input_data)
 
         # Main agent only has Task tool - delegates to builder subagent in .claude/agents/builder.md
         self.options = ClaudeAgentOptions(

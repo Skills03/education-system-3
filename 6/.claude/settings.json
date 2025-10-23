@@ -11,8 +11,7 @@
       "Grep",
       "LS",
       "WebFetch",
-      "WebSearch",
-      "Task"
+      "WebSearch"
     ]
   }
 }
