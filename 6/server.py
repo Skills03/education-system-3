@@ -32,6 +32,8 @@ from claude_agent_sdk import (
 )
 from claude_agent_sdk.types import (
     ToolPermissionContext,
+    PermissionResultAllow,
+    PermissionResultDeny,
 )
 
 # Import story teaching tools
@@ -117,7 +119,7 @@ class UnifiedSession:
 
             if tool_count >= HARD_TOOL_LIMIT:
                 logger.warning(f"[{self.session_id[:8]}] ✗ DENIED - {HARD_TOOL_LIMIT} tools already used")
-                return {"behavior": "deny", "message": f"Maximum {HARD_TOOL_LIMIT} tools per response.", "interrupt": False}
+                return PermissionResultDeny(behavior="deny", message=f"Maximum {HARD_TOOL_LIMIT} tools per response.")
 
             # Check concept limit and sequencing
             can_use, reason = self.concept_permission.can_use_tool(
@@ -128,10 +130,10 @@ class UnifiedSession:
 
             if can_use:
                 logger.info(f"[{self.session_id[:8]}] ✓ Tool allowed ({tool_count+1}/{HARD_TOOL_LIMIT}): {tool_name}")
-                return {"behavior": "allow", "updatedInput": input_data}
+                return PermissionResultAllow(behavior="allow", updated_input=input_data)
             else:
                 logger.warning(f"[{self.session_id[:8]}] ✗ Tool denied: {tool_name} - {reason}")
-                return {"behavior": "deny", "message": reason, "interrupt": False}
+                return PermissionResultDeny(behavior="deny", message=reason)
 
         # Single master agent - handles both teaching AND building
         master_agent = AgentDefinition(
