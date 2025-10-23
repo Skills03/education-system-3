@@ -583,6 +583,7 @@
         const sidebar = document.getElementById('sidebar');
         const sidebarBackdrop = document.getElementById('sidebarBackdrop');
         let typingIndicator = null;
+        let lastAction = null; // Track last tool used
 
         // Load sessions on startup
         function renderSessions() {
@@ -824,10 +825,23 @@
                 msgDiv.innerHTML = `<strong>👤 You:</strong> ${content}`;
             } else if (type === 'action') {
                 msgDiv.textContent = content;
+                // Track which tool was used
+                if (content.includes('Bash') || content.includes('LS')) {
+                    lastAction = 'terminal';
+                } else {
+                    lastAction = 'other';
+                }
             } else if (type === 'output') {
                 const text = Array.isArray(content) ? (content[0]?.text || JSON.stringify(content)) : content;
-                const rendered = typeof marked !== 'undefined' ? marked.parse(text) : text;
-                msgDiv.innerHTML = rendered;
+                
+                // Format terminal/bash outputs with preserved whitespace
+                if (lastAction === 'terminal') {
+                    msgDiv.innerHTML = `<pre style="background:#1e1e1e;color:#e5e7eb;padding:16px;border-radius:8px;overflow-x:auto;margin:12px 0;white-space:pre-wrap;font-size:0.9em;">${text}</pre>`;
+                    lastAction = null; // Reset after use
+                } else {
+                    const rendered = typeof marked !== 'undefined' ? marked.parse(text) : text;
+                    msgDiv.innerHTML = rendered;
+                }
             } else if (type === 'cost') {
                 msgDiv.innerHTML = `💰 Lesson Cost: ${content}`;
             } else if (type === 'error') {

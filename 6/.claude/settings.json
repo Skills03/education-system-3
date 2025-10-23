@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "deny": [
+      "TodoWrite",
+      "Write",
+      "Edit",
+      "MultiEdit",
+      "Bash",
+      "Read",
+      "Glob",
+      "Grep",
+      "LS",
+      "WebFetch",
+      "WebSearch",
+      "Task"
+    ]
+  }
+}

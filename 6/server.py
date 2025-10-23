@@ -114,6 +114,20 @@ class UnifiedSession:
             input_data: dict[str, any],
             context: ToolPermissionContext
         ):
+            # Block all Claude Code interactive tools - only allow MCP tools
+            ALLOWED_MCP_TOOLS = [
+                "mcp__story__explain_with_analogy",
+                "mcp__story__walk_through_concept",
+                "mcp__story__generate_teaching_scene",
+                "mcp__app_builder__list_app_templates",
+                "mcp__app_builder__customize_app_template",
+                "mcp__app_builder__generate_client_proposal",
+            ]
+            
+            if tool_name not in ALLOWED_MCP_TOOLS:
+                logger.warning(f"[{self.session_id[:8]}] ✗ BLOCKED interactive tool: {tool_name}")
+                return PermissionResultDeny(behavior="deny", message=f"Only custom MCP tools allowed. Use app_builder or story tools.")
+            
             # Dynamic limit: 10 for building, 3 for teaching
             is_building = any(word in self.current_instruction.lower() for word in ['build', 'create', 'portfolio', 'website', 'app', 'menu', 'booking', 'invoice'])
             HARD_TOOL_LIMIT = 10 if is_building else 3
@@ -140,23 +154,25 @@ class UnifiedSession:
                 return PermissionResultDeny(behavior="deny", message=reason)
 
         # Single master agent - handles both teaching AND building
+        # NOTE: Empty tools=[] blocks Claude Code interactive tools, agent only gets MCP tools from allowed_tools
         master_agent = AgentDefinition(
             description="Teaching and app building agent",
-            prompt="""You are a dual-mode agent with 6 tools.
+            tools=[],  # CRITICAL: Empty list blocks all Claude Code interactive tools
+            prompt="""You are a dual-mode agent with 6 MCP tools.
 
 DETECT user intent from query:
 
 **If query contains "build", "create", "portfolio", "menu", "booking", "client", "website":**
-→ APP BUILDING MODE - Use ONLY:
-1. list_app_templates
-2. customize_app_template
-3. generate_client_proposal
+→ APP BUILDING MODE - Use ONLY these MCP tools:
+1. mcp__app_builder__list_app_templates
+2. mcp__app_builder__customize_app_template
+3. mcp__app_builder__generate_client_proposal
 
 **Otherwise (teach, explain, how does, what is):**
-→ TEACHING MODE - Use ONLY:
-1. explain_with_analogy
-2. walk_through_concept
-3. generate_teaching_scene
+→ TEACHING MODE - Use ONLY these MCP tools:
+1. mcp__story__explain_with_analogy
+2. mcp__story__walk_through_concept
+3. mcp__story__generate_teaching_scene
 
 Use EXACTLY 3 tools for chosen mode, then STOP. No commentary after tools complete.
 
@@ -164,7 +180,7 @@ Use EXACTLY 3 tools for chosen mode, then STOP. No commentary after tools comple
 
 ## TEACHING MODE DETAILS:
 
-# TOOL 1: explain_with_analogy
+# TOOL 1: mcp__story__explain_with_analogy
 Start with real-world metaphor:
 - Arrays = egg cartons
 - Variables = labeled boxes
@@ -175,7 +191,7 @@ Parameters:
 - analogy: the real-world comparison (2-3 sentences)
 - connection: why the comparison works (1-2 sentences)
 
-# TOOL 2: walk_through_concept
+# TOOL 2: mcp__story__walk_through_concept
 Show 4 progressive steps using the analogy:
 
 Parameters:
@@ -186,7 +202,7 @@ Parameters:
 - step4: fourth action
 - key_insight: main takeaway (1 sentence)
 
-# TOOL 3: generate_teaching_scene
+# TOOL 3: mcp__story__generate_teaching_scene
 Create PERSON + OBJECT + ACTION visual:
 
 Parameters:
@@ -219,11 +235,12 @@ action_description: "Developer pointing at slot 2, finger touching the egg"
 labels: "Labels showing: array[0], array[1], array[2] (highlighted), array[3], array[4], array[5]"
 
 # RULES:
-✅ Use all 3 tools in exact order
+✅ Use all 3 MCP tools in exact order
 ✅ Stop immediately after tool 3
 ✅ Keep parameters concise (1-3 sentences each)
 ✅ Always use the analogy from tool 1 in tool 2
 
+❌ Do NOT use Claude Code interactive tools (Write, Bash, Edit, Read, etc.)
 ❌ Do NOT respond to student after tools complete
 ❌ Do NOT add extra commentary or explanations
 ❌ Do NOT skip any tool
@@ -234,26 +251,18 @@ The 3 teaching tools teach everything.
 
 ## APP BUILDING MODE DETAILS:
 
-Tool 1: list_app_templates - Show available templates with pricing
-Tool 2: customize_app_template - Generate client-ready HTML code
-Tool 3: generate_client_proposal - Create professional proposal
+Tool 1: mcp__app_builder__list_app_templates - Show available templates with pricing
+Tool 2: mcp__app_builder__customize_app_template - Generate client-ready HTML code
+Tool 3: mcp__app_builder__generate_client_proposal - Create professional proposal
 
 PRICING: Portfolio $50-150, Menu $200-500, Booking $300-800
 
-The 3 building tools create sellable apps.""",
-            tools=[
-                "mcp__story__explain_with_analogy",
-                "mcp__story__walk_through_concept",
-                "mcp__story__generate_teaching_scene",
-                "mcp__app_builder__list_app_templates",
-                "mcp__app_builder__customize_app_template",
-                "mcp__app_builder__generate_client_proposal",
-            ],
+The 3 building MCP tools create sellable apps.""",
             model="sonnet"
         )
 
+        # NO agents parameter - calculator example shows this blocks Claude Code tools
         self.options = ClaudeAgentOptions(
-            agents={"master": master_agent},
             mcp_servers={
                 "story": story_teaching,
                 "app_builder": app_builder,
@@ -298,17 +307,36 @@ The 3 building tools create sellable apps.""",
             self.current_agent_message = ""
             self.current_instruction = instruction  # Store for tool limit detection
 
-            # SDK auto-routes to appropriate agent based on descriptions
-            # Just send the instruction directly
+            # Inject mode-specific instructions into query
+            is_building = any(word in instruction.lower() for word in ['build', 'create', 'portfolio', 'website', 'app', 'menu', 'booking', 'invoice'])
+            
+            if is_building:
+                full_query = f"""User request: {instruction}
+
+IMPORTANT: You have ONLY these 3 MCP tools available:
+1. mcp__app_builder__list_app_templates
+2. mcp__app_builder__customize_app_template  
+3. mcp__app_builder__generate_client_proposal
+
+Use all 3 tools in order. Do NOT use any other tools (Write, Bash, Edit, etc.). Stop after tool 3 completes."""
+            else:
+                full_query = f"""User request: {instruction}
+
+IMPORTANT: You have ONLY these 3 MCP tools available:
+1. mcp__story__explain_with_analogy
+2. mcp__story__walk_through_concept
+3. mcp__story__generate_teaching_scene
+
+Use all 3 tools in order. Do NOT use any other tools. Stop after tool 3 completes."""
             
             logger.info(f"[{self.session_id[:8]}] Query: {instruction}")
+            logger.info(f"[{self.session_id[:8]}] Mode: {'BUILD' if is_building else 'TEACH'}")
             
             # Get student knowledge context
             knowledge_context = self.knowledge.get_context_summary()
             logger.info(f"[{self.session_id[:8]}] Knowledge: {knowledge_context}")
 
-            # SDK picks agent automatically based on query + agent descriptions
-            await self.client.query(instruction)
+            await self.client.query(full_query)
 
             message_count = 0
             async for msg in self.client.receive_response():
