@@ -114,28 +114,23 @@ class UnifiedSession:
             input_data: dict[str, any],
             context: ToolPermissionContext
         ):
-            # Block all Claude Code interactive tools - only allow MCP tools
+            # Block all Claude Code interactive tools - only allow app_builder MCP tools
             ALLOWED_MCP_TOOLS = [
-                "mcp__story__explain_with_analogy",
-                "mcp__story__walk_through_concept",
-                "mcp__story__generate_teaching_scene",
                 "mcp__app_builder__list_app_templates",
                 "mcp__app_builder__customize_app_template",
                 "mcp__app_builder__generate_client_proposal",
             ]
             
             if tool_name not in ALLOWED_MCP_TOOLS:
-                logger.warning(f"[{self.session_id[:8]}] ✗ BLOCKED interactive tool: {tool_name}")
-                return PermissionResultDeny(behavior="deny", message=f"Only custom MCP tools allowed. Use app_builder or story tools.")
+                logger.warning(f"[{self.session_id[:8]}] ✗ BLOCKED: {tool_name}")
+                return PermissionResultDeny(behavior="deny", message=f"Only app_builder MCP tools allowed.")
             
-            # Dynamic limit: 10 for building, 3 for teaching
-            is_building = any(word in self.current_instruction.lower() for word in ['build', 'create', 'portfolio', 'website', 'app', 'menu', 'booking', 'invoice'])
-            HARD_TOOL_LIMIT = 10 if is_building else 3
+            # Tool limit for building mode
+            HARD_TOOL_LIMIT = 10
             tool_count = len(self.concept_permission.tracker.tools_used)
 
             if tool_count >= HARD_TOOL_LIMIT:
-                mode = "BUILD" if is_building else "TEACH"
-                logger.warning(f"[{self.session_id[:8]}] ✗ DENIED - {HARD_TOOL_LIMIT} tools used ({mode} mode)")
+                logger.warning(f"[{self.session_id[:8]}] ✗ DENIED - {HARD_TOOL_LIMIT} tools used (BUILD mode)")
                 return PermissionResultDeny(behavior="deny", message=f"Maximum {HARD_TOOL_LIMIT} tools per response.")
 
             # Check concept limit and sequencing
@@ -146,137 +141,22 @@ class UnifiedSession:
             )
 
             if can_use:
-                mode = "BUILD" if is_building else "TEACH"
-                logger.info(f"[{self.session_id[:8]}] ✓ Tool allowed ({tool_count+1}/{HARD_TOOL_LIMIT} {mode}): {tool_name}")
+                logger.info(f"[{self.session_id[:8]}] ✓ Tool allowed ({tool_count+1}/{HARD_TOOL_LIMIT} BUILD): {tool_name}")
                 return PermissionResultAllow(behavior="allow", updated_input=input_data)
             else:
                 logger.warning(f"[{self.session_id[:8]}] ✗ Tool denied: {tool_name} - {reason}")
                 return PermissionResultDeny(behavior="deny", message=reason)
 
-        # Single master agent - handles both teaching AND building
-        # NOTE: Empty tools=[] blocks Claude Code interactive tools, agent only gets MCP tools from allowed_tools
-        master_agent = AgentDefinition(
-            description="Teaching and app building agent",
-            tools=[],  # CRITICAL: Empty list blocks all Claude Code interactive tools
-            prompt="""You are a dual-mode agent with 6 MCP tools.
-
-DETECT user intent from query:
-
-**If query contains "build", "create", "portfolio", "menu", "booking", "client", "website":**
-→ APP BUILDING MODE - Use ONLY these MCP tools:
-1. mcp__app_builder__list_app_templates
-2. mcp__app_builder__customize_app_template
-3. mcp__app_builder__generate_client_proposal
-
-**Otherwise (teach, explain, how does, what is):**
-→ TEACHING MODE - Use ONLY these MCP tools:
-1. mcp__story__explain_with_analogy
-2. mcp__story__walk_through_concept
-3. mcp__story__generate_teaching_scene
-
-Use EXACTLY 3 tools for chosen mode, then STOP. No commentary after tools complete.
-
----
-
-## TEACHING MODE DETAILS:
-
-# TOOL 1: mcp__story__explain_with_analogy
-Start with real-world metaphor:
-- Arrays = egg cartons
-- Variables = labeled boxes
-- Loops = running laps
-
-Parameters:
-- concept: the programming concept name
-- analogy: the real-world comparison (2-3 sentences)
-- connection: why the comparison works (1-2 sentences)
-
-# TOOL 2: mcp__story__walk_through_concept
-Show 4 progressive steps using the analogy:
-
-Parameters:
-- concept: same concept from tool 1
-- step1: first action using analogy
-- step2: second action
-- step3: third action
-- step4: fourth action
-- key_insight: main takeaway (1 sentence)
-
-# TOOL 3: mcp__story__generate_teaching_scene
-Create PERSON + OBJECT + ACTION visual:
-
-Parameters:
-- concept: same concept
-- person_description: "Developer [doing action]" (1 sentence)
-- object_description: "Real-world object [details]" (1 sentence)
-- action_description: "Person [specific action]" (1 sentence)
-- labels: "Technical labels to show: array[0], array[1]..." (1 sentence)
-
-# EXAMPLE for "teach arrays":
-
-Tool 1:
-concept: "arrays"
-analogy: "Arrays are like egg cartons. Each slot holds one egg. Slots are numbered 0, 1, 2, 3. You grab any egg instantly by its number."
-connection: "Array indices are like slot numbers. eggs[2] means 'get the egg in slot 2'."
-
-Tool 2:
-concept: "array access"
-step1: "Look at the carton (the array)"
-step2: "Find slot number 2 (the index)"
-step3: "Grab the egg at slot 2 (array access)"
-step4: "You got the egg! (retrieved the value)"
-key_insight: "Arrays let you access any element instantly by position number."
-
-Tool 3:
-concept: "arrays"
-person_description: "Developer with index finger extended, pointing downward"
-object_description: "Egg carton with 6 eggs in clear numbered slots 0, 1, 2, 3, 4, 5"
-action_description: "Developer pointing at slot 2, finger touching the egg"
-labels: "Labels showing: array[0], array[1], array[2] (highlighted), array[3], array[4], array[5]"
-
-# RULES:
-✅ Use all 3 MCP tools in exact order
-✅ Stop immediately after tool 3
-✅ Keep parameters concise (1-3 sentences each)
-✅ Always use the analogy from tool 1 in tool 2
-
-❌ Do NOT use Claude Code interactive tools (Write, Bash, Edit, Read, etc.)
-❌ Do NOT respond to student after tools complete
-❌ Do NOT add extra commentary or explanations
-❌ Do NOT skip any tool
-
-The 3 teaching tools teach everything.
-
----
-
-## APP BUILDING MODE DETAILS:
-
-Tool 1: mcp__app_builder__list_app_templates - Show available templates with pricing
-Tool 2: mcp__app_builder__customize_app_template - Generate client-ready HTML code
-Tool 3: mcp__app_builder__generate_client_proposal - Create professional proposal
-
-PRICING: Portfolio $50-150, Menu $200-500, Booking $300-800
-
-The 3 building MCP tools create sellable apps.""",
-            model="sonnet"
-        )
-
-        # NO agents parameter - calculator example shows this blocks Claude Code tools
+        # Main agent only has Task tool - delegates to builder subagent in .claude/agents/builder.md
         self.options = ClaudeAgentOptions(
             mcp_servers={
-                "story": story_teaching,
                 "app_builder": app_builder,
             },
-            allowed_tools=[
-                "mcp__story__explain_with_analogy",
-                "mcp__story__walk_through_concept",
-                "mcp__story__generate_teaching_scene",
-                "mcp__app_builder__list_app_templates",
-                "mcp__app_builder__customize_app_template",
-                "mcp__app_builder__generate_client_proposal",
-            ],
+            allowed_tools=["Task"],  # Task tool reads .claude/agents/builder.md
+            system_prompt="You are a coordinator. For ALL app building requests, delegate to the builder subagent using the Task tool with subagent_type='builder'. Never try to build apps yourself.",
             can_use_tool=limit_tools,
-            setting_sources=["project"]
+            setting_sources=["project"],
+            cwd="/home/mahadev/Desktop/dev/education/6"  # Working directory with .claude/agents/
         )
         self.messages = []
 
@@ -307,36 +187,16 @@ The 3 building MCP tools create sellable apps.""",
             self.current_agent_message = ""
             self.current_instruction = instruction  # Store for tool limit detection
 
-            # Inject mode-specific instructions into query
-            is_building = any(word in instruction.lower() for word in ['build', 'create', 'portfolio', 'website', 'app', 'menu', 'booking', 'invoice'])
-            
-            if is_building:
-                full_query = f"""User request: {instruction}
-
-IMPORTANT: You have ONLY these 3 MCP tools available:
-1. mcp__app_builder__list_app_templates
-2. mcp__app_builder__customize_app_template  
-3. mcp__app_builder__generate_client_proposal
-
-Use all 3 tools in order. Do NOT use any other tools (Write, Bash, Edit, etc.). Stop after tool 3 completes."""
-            else:
-                full_query = f"""User request: {instruction}
-
-IMPORTANT: You have ONLY these 3 MCP tools available:
-1. mcp__story__explain_with_analogy
-2. mcp__story__walk_through_concept
-3. mcp__story__generate_teaching_scene
-
-Use all 3 tools in order. Do NOT use any other tools. Stop after tool 3 completes."""
-            
+            # Builder mode only - no mode detection needed
             logger.info(f"[{self.session_id[:8]}] Query: {instruction}")
-            logger.info(f"[{self.session_id[:8]}] Mode: {'BUILD' if is_building else 'TEACH'}")
+            logger.info(f"[{self.session_id[:8]}] Mode: BUILD")
             
             # Get student knowledge context
             knowledge_context = self.knowledge.get_context_summary()
             logger.info(f"[{self.session_id[:8]}] Knowledge: {knowledge_context}")
 
-            await self.client.query(full_query)
+            # Send directly - agent has prompt with instructions
+            await self.client.query(instruction)
 
             message_count = 0
             async for msg in self.client.receive_response():
