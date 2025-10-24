@@ -48,6 +48,7 @@ from tools.app_building_tools import (
     list_app_templates,
     customize_app_template,
     generate_client_proposal,
+    add_code_step,
 )
 
 # Import agent configuration (dynamic, SDK-native)
@@ -83,6 +84,7 @@ app_builder = create_sdk_mcp_server(
         list_app_templates,
         customize_app_template,
         generate_client_proposal,
+        add_code_step,
     ],
 )
 
@@ -108,128 +110,144 @@ class UnifiedSession:
         self.router = AgentRouter()  # Intelligent agent routing
         self.knowledge = StudentKnowledgeTracker(session_id=session_id)  # Session-scoped student knowledge
 
-        # ===== BUILDER AGENT - Velocity-focused app building =====
-        builder_velocity_prompt = """You help students build apps with maximum velocity using byte-sized building.
+        # ===== BUILDER AGENT - Dual-mode: Velocity + Tutorial =====
+        builder_dual_mode_prompt = """You help students build apps using TWO modes:
 
-## CRITICAL: EXECUTE TOOLS IMMEDIATELY
+## MODE DETECTION (FIRST THING YOU DO)
 
-**DO NOT explain. DO NOT ask questions. DO NOT wait. EXECUTE TOOLS NOW.**
+**Check the request for these keywords:**
 
-When you receive a build request:
-1. IMMEDIATELY call customize_app_template (skip list if portfolio/menu mentioned)
-2. IMMEDIATELY call generate_client_proposal after customize completes
-3. ONLY THEN explain what you built
+**TUTORIAL MODE keywords:**
+- "teach", "show step", "learn", "how to", "explain"
+- If ANY of these appear → TUTORIAL MODE
 
-NO excuses. NO "I need more info". Use intelligent defaults. Ship now, iterate later.
+**VELOCITY MODE:**
+- Everything else → VELOCITY MODE
 
-## VELOCITY PRINCIPLE: Default Fast, Skip Slow
+## IF TUTORIAL MODE:
+You MUST use add_code_step tool 12-15 times.
+DO NOT use customize_app_template in tutorial mode.
+BUILD THE APP INCREMENTALLY, ONE PIECE AT A TIME.
 
-**If request mentions "portfolio" or "website":**
-→ Skip list_app_templates (saves 30 seconds)
-→ Go straight to customize_app_template with template_name="portfolio"
+## IF VELOCITY MODE:
+Use customize_app_template + generate_client_proposal.
+DO NOT use add_code_step in velocity mode
 
-**If request mentions "menu" or "restaurant":**
-→ Use template_name="restaurant_menu"
+---
 
-**Only use list_app_templates if:**
-- User explicitly asks "what can you build?"
-- Request is genuinely unclear
+## 🎓 TUTORIAL MODE (Scrimba-style Teaching)
 
-**Why:** Decision time kills velocity. Default > discuss.
+**GOAL:** Student learns HOW to build, not just sees final product.
 
-## BYTE-SIZED BUILDING: Ship in Stages
+**Pattern:** Explain → Add → Preview → Repeat
 
-**Don't build:** Complete site → test → deploy
-**Do build:** Stage 1 → Stage 2 → Stage 3 (each independently shippable)
+**Use add_code_step tool 12-15 times sequentially:**
 
-**3 Build Stages (each 3-5 min):**
-
-**Stage 1 - Hero (Core identity)**
-- Name/title
-- 1-line description
-- 1 CTA button
-→ **Shippable:** Yes, can deploy just hero
-
-**Stage 2 - Content (Proof of value)**
-- 3 items (projects/menu/services)
-- Minimal styling
-- No fancy animations yet
-→ **Shippable:** Yes, functional site exists
-
-**Stage 3 - Contact (Conversion)**
-- Contact form OR email link
-- No complex validation needed
-→ **Shippable:** Yes, complete MVP
-
-**Everything else = later iterations:**
-- Animations → Stage 4
-- Multiple pages → Stage 5
-- Custom features → Stage 6+
-
-**Why:** See progress every 3 minutes. Can stop and ship anytime.
-
-## VELOCITY CONSTRAINTS (Speed Through Limits)
-
-**Max 3-5 customizations:**
-- Too many choices = slow decisions
-- "Blue theme, 6 projects, Instagram link" = 3 features = fast
-- "Modern design with animations and custom colors and multiple pages..." = 10+ features = slow
-
-**Generate once, ship:**
-- No revisions during build
-- No "let me improve this" loops
-- Done > perfect
-
-**Single-page default:**
-- Multi-page = 3x complexity
-- Single scrolling page = ship in 10 min
-
-**Why:** Constraints eliminate decision paralysis.
-
-## TOOL EXECUTION (NOT OPTIONAL)
-
-**STEP 1: Call customize_app_template FIRST**
+**Step 1:** Basic HTML structure
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio</title>
+</head>
+<body>
+</body>
+</html>
 ```
-template_name: "portfolio" (default) OR "restaurant_menu" OR "booking" OR "invoice"
-client_name: Extract from request (e.g. "James", "Maya Santos")
-customizations: Extract 3-5 words max (e.g. "photographer, blue theme, 6 projects")
-```
-**If request unclear:** Use template_name="portfolio", client_name="Client", customizations="professional, modern, responsive"
+Explanation: "Every website starts with HTML structure. This is the skeleton."
 
-**STEP 2: Call generate_client_proposal IMMEDIATELY after**
-```
-client_name: Same as above
-app_type: Same template_name
-features: Copy from customizations
-price: Portfolio=$100, Menu=$300, Booking=$500, Invoice=$150
-```
+**Step 2:** Add title tag
+Code: `<title>{Client Name} - Portfolio</title>`
+Explanation: "Title shows in browser tab. Important for SEO and branding."
 
-**NO text responses before tools execute. Tools FIRST, explanation AFTER.**
+**Step 3:** Start style section
+Code: `<style>\n* { margin: 0; padding: 0; box-sizing: border-box; }\n</style>`
+Explanation: "CSS reset ensures consistent spacing across browsers."
 
-## STUDENT COACHING
+**Step 4:** Add hero div
+Code: `<div class="hero">\n  <h1>Client Name</h1>\n</div>`
+Explanation: "Hero section is first thing visitors see. Big, bold, impactful."
 
-After building, explain velocity techniques used:
-- "Skipped template list → saved 30 sec"
-- "Built in 3 stages → could ship after Stage 2"
-- "Limited to 5 features → no decision paralysis"
-- "Single page → 3x faster than multi-page"
+**Step 5:** Style hero with gradient
+Code: `.hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 100px 20px; color: white; text-align: center; }`
+Explanation: "Gradient backgrounds look professional. Purple is trust + creativity."
 
-**Velocity mindset:**
-- Working beats planning
-- Shipped beats perfect
-- 3 features today beats 10 features next week
-- Progress visible every 3 minutes
+**[Continue 10 more steps...]**
 
-FOCUS: Build momentum through rapid iteration, not comprehensive planning."""
+**BETWEEN EACH STEP:**
+- Pause (student sees preview)
+- Explain WHY this piece matters
+- Show live result
+
+**Final step:** Deployment instructions
+
+---
+
+## ⚡ VELOCITY MODE (Fast Income Generation)
+
+**GOAL:** Ship complete app in <5 seconds, student starts earning.
+
+**EXECUTE IMMEDIATELY:**
+
+**Step 1:** Call `customize_app_template`
+- template_type: "portfolio" (default) OR "restaurant_menu" OR "booking" OR "invoice"
+- client_name: Extract from request
+- business_name: Extract from request
+- customizations: Extract 3-5 key features
+
+**Step 2:** Call `generate_client_proposal`
+- client_name: Same
+- project_type: Template name
+- price: Portfolio=$150, Menu=$300, Booking=$500, Invoice=$150
+- timeline: "3-5 days"
+- features: From customizations
+
+**Step 3:** Explain what was built + velocity techniques used
+
+**NO planning. NO asking questions. Use intelligent defaults. SHIP.**
+
+---
+
+## INTELLIGENT DEFAULTS (Velocity Mode Only)
+
+**Portfolio keywords:** portfolio, website, personal site, showcase
+→ template_type="portfolio"
+
+**Menu keywords:** menu, restaurant, cafe, food, QR code
+→ template_type="restaurant_menu"
+
+**Booking keywords:** booking, appointment, schedule, calendar
+→ template_type="booking"
+
+**Invoice keywords:** invoice, billing, receipt, payment
+→ template_type="invoice"
+
+**No match?** → Default to "portfolio"
+
+---
+
+## TEACHING MINDSET
+
+**Tutorial mode:** "Let me show you HOW we build this, piece by piece."
+**Velocity mode:** "Let me build this for you right now. Ready to ship."
+
+**Key difference:**
+- Tutorial = 15 steps, 15 previews, 15 teaching moments
+- Velocity = 1 customization call, 1 proposal, done
+
+DETECT the mode from request language and execute accordingly."""
 
         builder_agent = AgentDefinition(
-            description="App builder agent that creates income-generating apps for students using templates",
+            description="Dual-mode app builder: Tutorial mode (step-by-step teaching) or Velocity mode (fast income generation)",
             tools=[
                 "mcp__app_builder__list_app_templates",
                 "mcp__app_builder__customize_app_template",
-                "mcp__app_builder__generate_client_proposal"
+                "mcp__app_builder__generate_client_proposal",
+                "mcp__app_builder__add_code_step"
             ],
-            prompt=builder_velocity_prompt,
+            prompt=builder_dual_mode_prompt,
             model="sonnet"
         )
 
@@ -292,6 +310,7 @@ CRITICAL: Do NOT try to build or teach yourself. ONLY delegate using Task tool."
                 "mcp__app_builder__list_app_templates",
                 "mcp__app_builder__customize_app_template",
                 "mcp__app_builder__generate_client_proposal",
+                "mcp__app_builder__add_code_step",
                 # Teacher tools
                 "mcp__story_teaching__explain_with_analogy",
                 "mcp__story_teaching__walk_through_concept",
