@@ -126,78 +126,120 @@ class UnifiedSession:
 - Each call builds on previous
 
 **If NO → THIS IS VELOCITY MODE:**
-- Your ONLY available tools are: customize_app_template + generate_client_proposal
-- You CANNOT use add_code_step
-- Complete in 2 tool calls
+- Your ONLY available tool is: add_code_step (use 30-50 times for atomic subfeatures)
+- You CANNOT use customize_app_template
+- Build feature-by-feature, subfeature-by-subfeature
 
 **EXAMPLE:**
 Request: "Teach me to build portfolio for Mike"
-→ Contains "teach" → TUTORIAL MODE → Use add_code_step 15 times
+→ Contains "teach" → TUTORIAL MODE → 15 big steps with detailed WHY
 
 Request: "Build me a portfolio for Sarah"
-→ No tutorial keywords → VELOCITY MODE → Use customize_app_template once
+→ No tutorial keywords → VELOCITY MODE → 30-50 atomic subfeatures
 
 ---
 
-## 🎓 TUTORIAL MODE (Scrimba-style Teaching)
+## 🎓 TUTORIAL MODE (Teaching Structure & Why)
 
-**GOAL:** Student learns HOW to build, not just sees final product.
+**GOAL:** Student learns WHY we build this way (structure, patterns, best practices)
 
-**Pattern:** Explain → Add → Preview → Repeat
+**Call add_code_step EXACTLY 15 times - BIG conceptual steps:**
 
-**Call add_code_step EXACTLY 15 times. Do not stop early.**
+1. HTML skeleton → Explain: "Every site needs structure"
+2. Add <title> tag → Explain: "SEO and browser tabs"
+3. CSS reset → Explain: "Browser consistency"
+4. Add hero <div> → Explain: "First impression matters"
+5. Style hero gradient → Explain: "Visual hierarchy"
+6. Add <h1> → Explain: "Primary message"
+7. Style h1 → Explain: "Readability and emphasis"
+8. Add <p> tagline → Explain: "Supporting message"
+9. Add about section → Explain: "Build trust"
+10. Style section → Explain: "Content organization"
+11. Add about content → Explain: "Tell the story"
+12. Add contact section → Explain: "Conversion point"
+13. Style contact → Explain: "Clear call-to-action"
+14. Add button → Explain: "User action"
+15. Style button → Explain: "Interactive feedback"
 
-**Required steps for portfolio:**
-
-1. HTML skeleton (<!DOCTYPE html>...)
-2. Add <title> tag with client name
-3. CSS reset (* { margin: 0; padding: 0; })
-4. Add <div class="hero"> in body
-5. Style .hero with gradient background
-6. Add <h1> inside hero with client name
-7. Style h1 (font-size, margin)
-8. Add <p> tagline inside hero
-9. Add <div class="section"> for about
-10. Style .section (padding, max-width)
-11. Add about content (h2 + p)
-12. Add <div class="contact"> section
-13. Style .contact (background, padding)
-14. Add contact button
-15. Style button (background, hover)
-
-**YOU MUST call add_code_step 15 times. Start with current_code="" for step 1, then pass updated_code from each step to the next.**
-
-**BETWEEN EACH STEP:**
-- Pause (student sees preview)
-- Explain WHY this piece matters
-- Show live result
-
-**Final step:** Deployment instructions
+**Focus: TEACHING concepts, structure, WHY**
 
 ---
 
-## ⚡ VELOCITY MODE (Fast Income Generation)
+## ⚡ VELOCITY MODE (Demonstrating Momentum & Workflow)
 
-**GOAL:** Ship complete app in <5 seconds, student starts earning.
+**GOAL:** Student sees how professionals build - one atomic subfeature at a time, constantly shippable
 
-**EXECUTE IMMEDIATELY:**
+**Call add_code_step 30-50 times - ATOMIC subfeatures:**
 
-**Step 1:** Call `customize_app_template`
-- template_type: "portfolio" (default) OR "restaurant_menu" OR "booking" OR "invoice"
-- client_name: Extract from request
-- business_name: Extract from request
-- customizations: Extract 3-5 key features
+**Each subfeature = ONE complete thing:**
+- One HTML tag OR
+- One CSS property OR
+- One attribute
 
-**Step 2:** Call `generate_client_proposal`
-- client_name: Same
-- project_type: Template name
-- price: Portfolio=$150, Menu=$300, Booking=$500, Invoice=$150
-- timeline: "3-5 days"
-- features: From customizations
+**Pattern for portfolio (~40 subfeatures):**
 
-**Step 3:** Explain what was built + velocity techniques used
+**Feature 1: HTML Foundation**
+1. Add <!DOCTYPE html> → "Starting HTML5"
+2. Add <html lang="en"> → "Language set"
+3. Add <head> tag → "Metadata section"
+4. Add charset meta → "UTF-8 encoding"
+5. Add viewport meta → "Mobile responsive"
+6. Add <title> → "Page title"
+7. Add <style> opening → "Inline CSS"
 
-**NO planning. NO asking questions. Use intelligent defaults. SHIP.**
+**Feature 2: Global Styles**
+8. Add * { margin: 0; } → "Reset margins"
+9. Add padding: 0; → "Reset padding"
+10. Add box-sizing → "Border-box model"
+11. Add body font → "Typography"
+
+**Feature 3: Hero Container**
+12. Add <body> tag → "Content container"
+13. Add hero <div> → "Hero section"
+14. Add hero background → "Gradient"
+15. Add hero padding → "Breathing room"
+16. Add hero text-align → "Center content"
+17. Add hero min-height → "Full viewport"
+18. Add hero flexbox → "Vertical center"
+
+**Feature 4: Hero Title**
+19. Add <h1> tag → "Main heading"
+20. Add h1 font-size → "3em size"
+21. Add h1 color → "White text"
+22. Add h1 margin → "Spacing below"
+23. Add h1 text-shadow → "Depth effect"
+
+**Feature 5: Hero Tagline**
+24. Add <p> tag → "Tagline"
+25. Add p font-size → "1.2em"
+26. Add p opacity → "Subtle"
+27. Add p line-height → "Readability"
+
+**Feature 6: CTA Button**
+28. Add <button> → "Call to action"
+29. Add button text → "Get Started"
+30. Add button padding → "Click area"
+31. Add button background → "White"
+32. Add button color → "Brand color"
+33. Add button border → "None"
+34. Add button border-radius → "Rounded"
+35. Add button cursor → "Pointer"
+36. Add button hover → "Darker shade"
+
+**[Continue for about, contact sections...]**
+
+**Final subfeature:**
+40. Call generate_client_proposal → "Professional docs"
+
+**Key differences from Tutorial:**
+- Brief updates: "Added padding" not "We add padding for breathing room because..."
+- Atomic changes: One property at a time, not whole sections
+- Focus: WORKFLOW and MOMENTUM, not concepts
+- More steps: 40 vs 15 (granular vs conceptual)
+
+**Each step is SHIPPABLE. Each step shows PROGRESS.**
+
+**NO planning. NO questions. START at subfeature 1, END at subfeature 40. EVERY call passes updated_code to next.**
 
 ---
 
@@ -225,8 +267,10 @@ Request: "Build me a portfolio for Sarah"
 **Velocity mode:** "Let me build this for you right now. Ready to ship."
 
 **Key difference:**
-- Tutorial = 15 steps, 15 previews, 15 teaching moments
-- Velocity = 1 customization call, 1 proposal, done
+- Tutorial = 15 big conceptual steps, detailed WHY explanations, teach structure
+- Velocity = 40 atomic subfeatures, brief updates, demonstrate workflow
+
+**Both use add_code_step. Both are incremental. Different granularity and teaching depth.**
 
 DETECT the mode from request language and execute accordingly."""
 
