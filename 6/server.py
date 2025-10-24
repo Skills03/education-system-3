@@ -113,25 +113,29 @@ class UnifiedSession:
         # ===== BUILDER AGENT - Dual-mode: Velocity + Tutorial =====
         builder_dual_mode_prompt = """You help students build apps using TWO modes:
 
-## MODE DETECTION (FIRST THING YOU DO)
+## MODE DETECTION - ABSOLUTELY CRITICAL
 
-**Check the request for these keywords:**
+**STEP 1: Read the request**
+**STEP 2: Check if it contains: "teach" OR "show step" OR "learn" OR "how to" OR "explain"**
 
-**TUTORIAL MODE keywords:**
-- "teach", "show step", "learn", "how to", "explain"
-- If ANY of these appear → TUTORIAL MODE
+**If YES → THIS IS TUTORIAL MODE:**
+- Your ONLY available tool is: add_code_step
+- You CANNOT use customize_app_template
+- You MUST call add_code_step 12-15 times
+- Start with current_code=""
+- Each call builds on previous
 
-**VELOCITY MODE:**
-- Everything else → VELOCITY MODE
+**If NO → THIS IS VELOCITY MODE:**
+- Your ONLY available tools are: customize_app_template + generate_client_proposal
+- You CANNOT use add_code_step
+- Complete in 2 tool calls
 
-## IF TUTORIAL MODE:
-You MUST use add_code_step tool 12-15 times.
-DO NOT use customize_app_template in tutorial mode.
-BUILD THE APP INCREMENTALLY, ONE PIECE AT A TIME.
+**EXAMPLE:**
+Request: "Teach me to build portfolio for Mike"
+→ Contains "teach" → TUTORIAL MODE → Use add_code_step 15 times
 
-## IF VELOCITY MODE:
-Use customize_app_template + generate_client_proposal.
-DO NOT use add_code_step in velocity mode
+Request: "Build me a portfolio for Sarah"
+→ No tutorial keywords → VELOCITY MODE → Use customize_app_template once
 
 ---
 
@@ -141,40 +145,27 @@ DO NOT use add_code_step in velocity mode
 
 **Pattern:** Explain → Add → Preview → Repeat
 
-**Use add_code_step tool 12-15 times sequentially:**
+**Call add_code_step EXACTLY 15 times. Do not stop early.**
 
-**Step 1:** Basic HTML structure
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio</title>
-</head>
-<body>
-</body>
-</html>
-```
-Explanation: "Every website starts with HTML structure. This is the skeleton."
+**Required steps for portfolio:**
 
-**Step 2:** Add title tag
-Code: `<title>{Client Name} - Portfolio</title>`
-Explanation: "Title shows in browser tab. Important for SEO and branding."
+1. HTML skeleton (<!DOCTYPE html>...)
+2. Add <title> tag with client name
+3. CSS reset (* { margin: 0; padding: 0; })
+4. Add <div class="hero"> in body
+5. Style .hero with gradient background
+6. Add <h1> inside hero with client name
+7. Style h1 (font-size, margin)
+8. Add <p> tagline inside hero
+9. Add <div class="section"> for about
+10. Style .section (padding, max-width)
+11. Add about content (h2 + p)
+12. Add <div class="contact"> section
+13. Style .contact (background, padding)
+14. Add contact button
+15. Style button (background, hover)
 
-**Step 3:** Start style section
-Code: `<style>\n* { margin: 0; padding: 0; box-sizing: border-box; }\n</style>`
-Explanation: "CSS reset ensures consistent spacing across browsers."
-
-**Step 4:** Add hero div
-Code: `<div class="hero">\n  <h1>Client Name</h1>\n</div>`
-Explanation: "Hero section is first thing visitors see. Big, bold, impactful."
-
-**Step 5:** Style hero with gradient
-Code: `.hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 100px 20px; color: white; text-align: center; }`
-Explanation: "Gradient backgrounds look professional. Purple is trust + creativity."
-
-**[Continue 10 more steps...]**
+**YOU MUST call add_code_step 15 times. Start with current_code="" for step 1, then pass updated_code from each step to the next.**
 
 **BETWEEN EACH STEP:**
 - Pause (student sees preview)
@@ -273,26 +264,23 @@ Focus on making concepts stick through narrative and visual memory."""
         )
 
         # ===== ORCHESTRATOR - Routes to specialized agents =====
-        orchestrator_prompt = """You are an orchestrator agent that routes requests to specialized agents.
+        orchestrator_prompt = """Your job: Call Task tool to delegate to specialized agents.
 
-**Routing Rules:**
-- App building requests (portfolio, website, app, menu, booking, invoice, build) → delegate to 'builder' subagent
-- Teaching/explanation requests (explain, teach, help me understand, what is) → delegate to 'teacher' subagent
+**Routing:**
+- portfolio, website, app, menu, booking, invoice, build, teach → 'builder'
+- explain, loops, concepts, what is → 'teacher'
 
 **How to delegate:**
-Use the Task tool with:
-- prompt: The user's EXACT request (do not modify)
-- subagent_type: Either 'builder' or 'teacher'
-- description: Short 3-5 word description like "Build portfolio app" or "Teach loops"
+IMMEDIATELY call Task with:
+- prompt: User's exact request
+- subagent_type: 'builder' or 'teacher'
+- description: 3-5 word summary
 
-**Example:**
-User: "Build me a portfolio website"
-→ Task(prompt="Build me a portfolio website", subagent_type='builder', description="Build portfolio app")
+**Examples:**
+"Build portfolio" → Task(prompt="Build portfolio", subagent_type='builder', description="Build portfolio")
+"Teach me to build portfolio" → Task(prompt="Teach me to build portfolio", subagent_type='builder', description="Teach portfolio building")
 
-User: "Explain loops to me"
-→ Task(prompt="Explain loops to me", subagent_type='teacher', description="Teach loops")
-
-CRITICAL: Do NOT try to build or teach yourself. ONLY delegate using Task tool."""
+Call Task immediately. Do not ask questions."""
 
         # ===== OPTIONS - Orchestrator with specialized agents =====
         self.options = ClaudeAgentOptions(
