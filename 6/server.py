@@ -97,7 +97,7 @@ message_queues = {}
 
 
 class UnifiedSession:
-    """Master session with compositional multi-modal teaching"""
+    """Master session with orchestrator pattern - delegates to specialized agents"""
 
     def __init__(self, session_id):
         self.session_id = session_id
@@ -108,31 +108,197 @@ class UnifiedSession:
         self.router = AgentRouter()  # Intelligent agent routing
         self.knowledge = StudentKnowledgeTracker(session_id=session_id)  # Session-scoped student knowledge
 
-        # Main agent permission: ONLY Task tool allowed
-        async def limit_tools(
-            tool_name: str,
-            input_data: dict[str, any],
-            context: ToolPermissionContext
-        ):
-            # Force delegation via Task tool - block direct MCP access
-            if tool_name != "Task":
-                logger.warning(f"[{self.session_id[:8]}] ✗ BLOCKED: {tool_name} - Main agent must delegate via Task")
-                return PermissionResultDeny(behavior="deny", message=f"Use Task tool to delegate to builder subagent with subagent_type='builder'")
+        # ===== BUILDER AGENT - Velocity-focused app building =====
+        builder_velocity_prompt = """You help students build apps with maximum velocity using byte-sized building.
 
-            # Allow Task tool
-            logger.info(f"[{self.session_id[:8]}] ✓ Task tool allowed - delegating to builder subagent")
-            return PermissionResultAllow(behavior="allow", updated_input=input_data)
+## CRITICAL: EXECUTE TOOLS IMMEDIATELY
 
-        # Main agent only has Task tool - delegates to builder subagent in .claude/agents/builder.md
+**DO NOT explain. DO NOT ask questions. DO NOT wait. EXECUTE TOOLS NOW.**
+
+When you receive a build request:
+1. IMMEDIATELY call customize_app_template (skip list if portfolio/menu mentioned)
+2. IMMEDIATELY call generate_client_proposal after customize completes
+3. ONLY THEN explain what you built
+
+NO excuses. NO "I need more info". Use intelligent defaults. Ship now, iterate later.
+
+## VELOCITY PRINCIPLE: Default Fast, Skip Slow
+
+**If request mentions "portfolio" or "website":**
+→ Skip list_app_templates (saves 30 seconds)
+→ Go straight to customize_app_template with template_name="portfolio"
+
+**If request mentions "menu" or "restaurant":**
+→ Use template_name="restaurant_menu"
+
+**Only use list_app_templates if:**
+- User explicitly asks "what can you build?"
+- Request is genuinely unclear
+
+**Why:** Decision time kills velocity. Default > discuss.
+
+## BYTE-SIZED BUILDING: Ship in Stages
+
+**Don't build:** Complete site → test → deploy
+**Do build:** Stage 1 → Stage 2 → Stage 3 (each independently shippable)
+
+**3 Build Stages (each 3-5 min):**
+
+**Stage 1 - Hero (Core identity)**
+- Name/title
+- 1-line description
+- 1 CTA button
+→ **Shippable:** Yes, can deploy just hero
+
+**Stage 2 - Content (Proof of value)**
+- 3 items (projects/menu/services)
+- Minimal styling
+- No fancy animations yet
+→ **Shippable:** Yes, functional site exists
+
+**Stage 3 - Contact (Conversion)**
+- Contact form OR email link
+- No complex validation needed
+→ **Shippable:** Yes, complete MVP
+
+**Everything else = later iterations:**
+- Animations → Stage 4
+- Multiple pages → Stage 5
+- Custom features → Stage 6+
+
+**Why:** See progress every 3 minutes. Can stop and ship anytime.
+
+## VELOCITY CONSTRAINTS (Speed Through Limits)
+
+**Max 3-5 customizations:**
+- Too many choices = slow decisions
+- "Blue theme, 6 projects, Instagram link" = 3 features = fast
+- "Modern design with animations and custom colors and multiple pages..." = 10+ features = slow
+
+**Generate once, ship:**
+- No revisions during build
+- No "let me improve this" loops
+- Done > perfect
+
+**Single-page default:**
+- Multi-page = 3x complexity
+- Single scrolling page = ship in 10 min
+
+**Why:** Constraints eliminate decision paralysis.
+
+## TOOL EXECUTION (NOT OPTIONAL)
+
+**STEP 1: Call customize_app_template FIRST**
+```
+template_name: "portfolio" (default) OR "restaurant_menu" OR "booking" OR "invoice"
+client_name: Extract from request (e.g. "James", "Maya Santos")
+customizations: Extract 3-5 words max (e.g. "photographer, blue theme, 6 projects")
+```
+**If request unclear:** Use template_name="portfolio", client_name="Client", customizations="professional, modern, responsive"
+
+**STEP 2: Call generate_client_proposal IMMEDIATELY after**
+```
+client_name: Same as above
+app_type: Same template_name
+features: Copy from customizations
+price: Portfolio=$100, Menu=$300, Booking=$500, Invoice=$150
+```
+
+**NO text responses before tools execute. Tools FIRST, explanation AFTER.**
+
+## STUDENT COACHING
+
+After building, explain velocity techniques used:
+- "Skipped template list → saved 30 sec"
+- "Built in 3 stages → could ship after Stage 2"
+- "Limited to 5 features → no decision paralysis"
+- "Single page → 3x faster than multi-page"
+
+**Velocity mindset:**
+- Working beats planning
+- Shipped beats perfect
+- 3 features today beats 10 features next week
+- Progress visible every 3 minutes
+
+FOCUS: Build momentum through rapid iteration, not comprehensive planning."""
+
+        builder_agent = AgentDefinition(
+            description="App builder agent that creates income-generating apps for students using templates",
+            tools=[
+                "mcp__app_builder__list_app_templates",
+                "mcp__app_builder__customize_app_template",
+                "mcp__app_builder__generate_client_proposal"
+            ],
+            prompt=builder_velocity_prompt,
+            model="sonnet"
+        )
+
+        # ===== TEACHER AGENT - Story-based teaching =====
+        teacher_prompt = """You are a story-based teaching agent that explains concepts using analogies, visualizations, and memorable scenes.
+
+Use your tools to:
+- explain_with_analogy: Create memorable comparisons
+- walk_through_concept: Step-by-step explanations with examples
+- generate_teaching_scene: Visual scenes that illustrate concepts
+
+Focus on making concepts stick through narrative and visual memory."""
+
+        teacher_agent = AgentDefinition(
+            description="Story-based teaching agent that explains concepts using analogies and visualizations",
+            tools=[
+                "mcp__story_teaching__explain_with_analogy",
+                "mcp__story_teaching__walk_through_concept",
+                "mcp__story_teaching__generate_teaching_scene"
+            ],
+            prompt=teacher_prompt,
+            model="sonnet"
+        )
+
+        # ===== ORCHESTRATOR - Routes to specialized agents =====
+        orchestrator_prompt = """You are an orchestrator agent that routes requests to specialized agents.
+
+**Routing Rules:**
+- App building requests (portfolio, website, app, menu, booking, invoice, build) → delegate to 'builder' subagent
+- Teaching/explanation requests (explain, teach, help me understand, what is) → delegate to 'teacher' subagent
+
+**How to delegate:**
+Use the Task tool with:
+- prompt: The user's EXACT request (do not modify)
+- subagent_type: Either 'builder' or 'teacher'
+- description: Short 3-5 word description like "Build portfolio app" or "Teach loops"
+
+**Example:**
+User: "Build me a portfolio website"
+→ Task(prompt="Build me a portfolio website", subagent_type='builder', description="Build portfolio app")
+
+User: "Explain loops to me"
+→ Task(prompt="Explain loops to me", subagent_type='teacher', description="Teach loops")
+
+CRITICAL: Do NOT try to build or teach yourself. ONLY delegate using Task tool."""
+
+        # ===== OPTIONS - Orchestrator with specialized agents =====
         self.options = ClaudeAgentOptions(
+            agents={
+                "builder": builder_agent,
+                "teacher": teacher_agent
+            },
             mcp_servers={
                 "app_builder": app_builder,
+                "story_teaching": story_teaching
             },
-            allowed_tools=["Task"],  # Task tool reads .claude/agents/builder.md
-            system_prompt="You are a coordinator. For ALL app building requests, delegate to the builder subagent using the Task tool with subagent_type='builder'. Never try to build apps yourself.",
-            can_use_tool=limit_tools,
-            setting_sources=["project"],
-            cwd="/home/mahadev/Desktop/dev/education/6"  # Working directory with .claude/agents/
+            allowed_tools=[
+                "Task",
+                # Builder tools
+                "mcp__app_builder__list_app_templates",
+                "mcp__app_builder__customize_app_template",
+                "mcp__app_builder__generate_client_proposal",
+                # Teacher tools
+                "mcp__story_teaching__explain_with_analogy",
+                "mcp__story_teaching__walk_through_concept",
+                "mcp__story_teaching__generate_teaching_scene"
+            ],
+            system_prompt=orchestrator_prompt,
+            cwd="/home/mahadev/Desktop/dev/education/6"
         )
         self.messages = []
 
