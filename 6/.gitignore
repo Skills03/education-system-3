@@ -32,3 +32,4 @@ package-lock.json
 dist/
 build/
 *.egg-info/
+.claude/settings.local.json

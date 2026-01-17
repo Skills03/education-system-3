@@ -1,18 +1,46 @@
 {
   "permissions": {
-    "deny": [
-      "TodoWrite",
-      "Write",
-      "Edit",
-      "MultiEdit",
-      "Bash",
+    "allow": [
       "Read",
       "Glob",
       "Grep",
-      "LS",
-      "WebFetch",
-      "WebSearch"
+      "Task",
+      "Edit(.claude/**)",
+      "Bash(python:*)",
+      "Bash(node:*)"
+    ],
+    "deny": [
+      "Bash(rm:*)",
+      "Bash(sudo:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Write(.env)",
+      "Read(.env)"
     ]
   },
-  "enableAllProjectMcpServers": true
+  "env": {
+    "EDUCATION_MODE": "mastery",
+    "PYTHONPATH": ".",
+    "MAX_THINKING_TOKENS": "20000",
+    "BASH_DEFAULT_TIMEOUT_MS": "5000",
+    "BASH_MAX_OUTPUT_LENGTH": "5000"
+  },
+  "outputStyle": "Education Tutor",
+  "statusLine": {
+    "type": "command",
+    "command": "python .claude/statusline.py"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python .claude/hooks/check-student-state.py"
+          }
+        ]
+      }
+    ]
+  }
 }
